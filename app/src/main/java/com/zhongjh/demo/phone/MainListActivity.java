@@ -97,6 +97,10 @@ public class MainListActivity extends AppCompatActivity {
 
         // 自定义CameraLayout
         mBinding.btnCustomCameraLayout.setOnClickListener(v -> MainCustomCameraLayoutActivity.newInstance(MainListActivity.this));
+
+        // 媒体功能测试页
+        mBinding.btnMediaTest.setOnClickListener(v ->
+                MediaTestActivity.newInstance(MainListActivity.this));
     }
 
     // 路径分隔符

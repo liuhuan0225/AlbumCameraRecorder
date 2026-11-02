@@ -79,6 +79,7 @@
         <activity android:name="com.zhongjh.demo.phone.MainSuperSimpleActivity" />
         <activity android:name="com.zhongjh.demo.phone.ErrorActivity" />
         <activity android:name="com.zhongjh.demo.phone.custom.MainCustomCameraLayoutActivity" />
+        <activity android:name="com.zhongjh.demo.phone.MediaTestActivity" />
 
     </application>
 

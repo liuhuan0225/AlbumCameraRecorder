@@ -62,6 +62,11 @@ public class ImageEditActivity extends BaseImageEditActivity {
     public static final String EXTRA_IMAGE_SCREEN_ORIENTATION = "EXTRA_SCREEN_ORIENTATION";
 
     /**
+     * 意图额外参数键：是否直接进入裁剪模式
+     */
+    public static final String EXTRA_START_CLIP = "EXTRA_START_CLIP";
+
+    /**
      * 意图额外参数键：宽度
      * 用于返回编辑后图像的宽度
      */
@@ -125,6 +130,15 @@ public class ImageEditActivity extends BaseImageEditActivity {
         options.inJustDecodeBounds = false;
 
         return decoder.decode(options);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra(EXTRA_START_CLIP, false)) {
+            getMImageViewCustom().post(() -> onModeClick(ImageMode.CLIP));
+        }
     }
 
     /**
