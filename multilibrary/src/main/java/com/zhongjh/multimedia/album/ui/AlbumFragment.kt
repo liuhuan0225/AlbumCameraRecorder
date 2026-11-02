@@ -27,6 +27,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -124,6 +125,11 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      * 跳转系统设置界面后的回调
      */
     private lateinit var mAppSettingsLauncher: ActivityResultLauncher<Intent>
+
+    /**
+     * 重新请求相册权限，用于Android14+系统弹出选择更多媒体
+     */
+    private lateinit var mAlbumPermissionLauncher: ActivityResultLauncher<Array<String>>
 
     /**
      * 系统拍照的回调
@@ -247,8 +253,8 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
     ): View {
         mBinding = FragmentAlbumZjhBinding.inflate(inflater, container, false)
         initConfig()
-        initView()
         initActivityResult()
+        initView()
         initListener()
         initMediaViewUtil()
         initObserveData()
@@ -276,7 +282,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 用 setOnApplyWindowInsetsListener 处理状态栏 inset，而不是一次性 getStatusBarHeight()：
         // 1. ViewCompat.getRootWindowInsets 在 Fragment 视图尚未 layout 时可能返回 0 或陈旧值
         // 2. 折叠屏内/外屏切换会触发 insets 重派发，listener 能自动再次回调更新 padding
-        mBinding.root.setOnApplyWindowInsetsListener { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.root) { v, insets ->
             val statusBarInsets = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.statusBars())
             v.setPadding(v.paddingLeft, statusBarInsets.top, v.paddingRight, v.paddingBottom)
             insets
@@ -515,6 +521,11 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         mAppSettingsLauncher = this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         }
 
+        // Android14+重新请求相册权限后，系统可选择更多媒体
+        mAlbumPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
+            mTvAlbumPermissionManager.onResume()
+        }
+
         // 系统拍照/录像共用回调
         mAppCameraLauncher = this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -678,8 +689,9 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 // 设置界面无回调，无需处理
             }
+            val permissionLauncher = mAlbumPermissionLauncher
             // 调用管理器初始化方法，传入启动器
-            init(launcher)
+            init(launcher, permissionLauncher)
         }
     }
 

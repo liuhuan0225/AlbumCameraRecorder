@@ -59,8 +59,8 @@
     <string name="z_load_more_failed">加载更多失败</string>
     <string name="z_multi_library_camera">正在使用相机</string>
 
-    <string name="tip_partial_media_access">仅可访问部分相册多媒体「点击调整权限」</string>
-    <string name="tip_partial_click_text">「点击调整权限」</string>
+    <string name="tip_partial_media_access">仅可访问部分相册多媒体「点击选择更多图片」</string>
+    <string name="tip_partial_click_text">「点击选择更多图片」</string>
 
     <!-- endregion -->
 

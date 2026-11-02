@@ -13,11 +13,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Devices running Android 12L (API level 32) or lower 旧版本选择权限 -->
+    <!-- Devices running Android 9 (API level 28) or lower need write access -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"
+        android:maxSdkVersion="28"
         tools:ignore="ScopedStorage" />
+    <!-- Devices running Android 12L (API level 32) or lower need read access -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />

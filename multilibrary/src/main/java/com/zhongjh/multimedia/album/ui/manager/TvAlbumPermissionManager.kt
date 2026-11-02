@@ -1,22 +1,30 @@
 package com.zhongjh.multimedia.album.ui.manager
 
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
+import android.provider.Settings
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.UnderlineSpan
 import android.view.View
+import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
+import com.zhongjh.common.enums.MimeType.Companion.ofImage
+import com.zhongjh.common.enums.MimeType.Companion.ofVideo
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.album.ui.AlbumModel
 import com.zhongjh.multimedia.album.ui.PermissionState
+import com.zhongjh.multimedia.constants.ModuleTypes
 import com.zhongjh.multimedia.databinding.FragmentAlbumZjhBinding
 import com.zhongjh.multimedia.model.MainModel
-import com.zhongjh.multimedia.utils.SettingsPermissionUtils
+import com.zhongjh.multimedia.settings.GlobalSpec.getMimeTypeSet
 
 /**
  * 封装 tvAlbumPermission 控件的 UI 逻辑（富文本、点击事件、权限状态控制等）
@@ -35,6 +43,9 @@ class TvAlbumPermissionManager(
     // 新增：权限设置页启动器（由外部 Fragment 注册并传入）
     private lateinit var appSettingsLauncher: ActivityResultLauncher<Intent>
 
+    // 新增：媒体权限启动器（由外部 Fragment 注册并传入）
+    private lateinit var albumPermissionLauncher: ActivityResultLauncher<Array<String>>
+
     /**
      * 标记是否有编辑权限，如果有编辑，那么在onResume中会处理
      */
@@ -44,9 +55,10 @@ class TvAlbumPermissionManager(
      * 初始化控件及启动器
      * @param launcher 由 Fragment 注册的权限设置页启动器
      */
-    fun init(launcher: ActivityResultLauncher<Intent>) {
+    fun init(launcher: ActivityResultLauncher<Intent>, permissionLauncher: ActivityResultLauncher<Array<String>>) {
         // 接收启动器实例
         this.appSettingsLauncher = launcher
+        this.albumPermissionLauncher = permissionLauncher
         setupRichText()
         observePermissionState()
     }
@@ -80,7 +92,7 @@ class TvAlbumPermissionManager(
             // 添加点击事件
             setSpan(object : ClickableSpan() {
                 override fun onClick(widget: View) {
-                    launchAppSettings()
+                    requestMoreMediaAccess()
                 }
 
                 override fun updateDrawState(ds: android.text.TextPaint) {
@@ -119,9 +131,46 @@ class TvAlbumPermissionManager(
      */
     private fun launchAppSettings() {
         val packageName = context.packageName
-        val settingsIntent = SettingsPermissionUtils.createAppSettingsIntent(packageName)
+        val settingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = android.net.Uri.fromParts("package", packageName, null)
+        }
         // 直接使用内部启动器
         appSettingsLauncher.launch(settingsIntent)
         isEditPermission = true
+    }
+
+    /**
+     * 重新请求媒体权限，让Android14+系统弹出选择更多媒体
+     */
+    private fun requestMoreMediaAccess() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            launchAppSettings()
+            return
+        }
+
+        val permissions = getMissingMediaPermissions()
+        if (permissions.isEmpty()) {
+            launchAppSettings()
+            return
+        }
+
+        isEditPermission = true
+        albumPermissionLauncher.launch(permissions.toTypedArray())
+    }
+
+    private fun getMissingMediaPermissions(): List<String> {
+        val permissions = mutableListOf<String>()
+        val mimeSet = getMimeTypeSet(ModuleTypes.ALBUM)
+        if (mimeSet.containsAll(ofImage()) &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
+        }
+        if (mimeSet.containsAll(ofVideo()) &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+        }
+        return permissions
     }
 }

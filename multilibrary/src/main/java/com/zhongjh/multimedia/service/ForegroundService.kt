@@ -121,7 +121,7 @@ class ForegroundService : Service() {
     private fun getAppName(): String {
         return runCatching {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            packageInfo.applicationInfo.loadLabel(packageManager).toString()
+            packageInfo.applicationInfo?.loadLabel(packageManager)?.toString().orEmpty()
         }.getOrElse {
             // 异常时返回空字符串，避免空指针
             ""
