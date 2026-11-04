@@ -16,6 +16,7 @@ import com.zhongjh.multimedia.settings.GlobalSpec.imageEngine
 
 class SelectedMediaBarAdapter(
     private val placeholder: Drawable,
+    private val onMediaClick: (Int) -> Unit,
     private val onRemoveClick: (LocalMedia) -> Unit
 ) : ListAdapter<LocalMedia, SelectedMediaBarAdapter.SelectedMediaViewHolder>(DIFF_CALLBACK) {
 
@@ -47,6 +48,12 @@ class SelectedMediaBarAdapter(
             binding.flVideoDuration.isVisible = isVideo
             if (isVideo) {
                 binding.tvSelectedVideoDuration.text = DateUtils.formatElapsedTime(media.duration / 1000)
+            }
+            binding.ivSelectedMedia.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onMediaClick(position)
+                }
             }
             binding.ivRemoveSelectedMedia.setOnClickListener {
                 onRemoveClick(media)

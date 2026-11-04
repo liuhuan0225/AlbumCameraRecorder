@@ -6,6 +6,8 @@
 
     <dimen name="z_selected_media_bar_size">56dp</dimen>
 
+    <dimen name="z_selected_media_bar_spacing">6dp</dimen>
+
     <dimen name="z_cpb_stroke_width">4dp</dimen>
 
 </resources>

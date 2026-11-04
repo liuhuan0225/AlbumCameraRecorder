@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="56dp"
-    android:layout_height="76dp">
+    android:layout_width="60dp"
+    android:layout_height="60dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivSelectedMedia"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|start"
         android:contentDescription="@string/z_multi_library_show_thumbnails"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.SelectedMediaThumbnail" />
 
     <ImageView
         android:id="@+id/ivRemoveSelectedMedia"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_gravity="top|end"
-        android:background="@drawable/bg_selected_media_delete_zjh"
         android:contentDescription="@string/z_multi_library_delete_button"
         android:src="@drawable/ic_selected_media_delete_zjh" />
 
@@ -25,7 +26,7 @@
         android:id="@+id/flVideoDuration"
         android:layout_width="56dp"
         android:layout_height="24dp"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|start"
         android:background="@drawable/bg_selected_video_duration_zjh"
         android:visibility="gone"
         tools:visibility="visible">

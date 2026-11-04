@@ -143,17 +143,21 @@
         android:elevation="1dp"
         app:layout_behavior="com.zhongjh.multimedia.widget.BottomBarBehavior"
         tools:layout_height="152dp">
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#0DFFFFFF"
+            />
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvSelectedMedia"
             android:layout_width="match_parent"
-            android:layout_height="76dp"
+            android:layout_height="60dp"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:orientation="horizontal"
             android:overScrollMode="never"
+            android:layout_marginTop="15dp"
             android:paddingStart="16dp"
-            android:paddingTop="16dp"
             android:paddingEnd="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toTopOf="parent"
@@ -171,6 +175,8 @@
             android:text="@string/z_multi_library_button_preview"
             android:textColor="@color/album_bottom_button_text_zjh"
             android:textSize="16sp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginStart="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintWidth_min="167dp" />
@@ -243,6 +249,8 @@
             android:id="@+id/buttonApply"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="16dp"
             android:layout_gravity="end"
             android:background="@drawable/bg_album_bottom_next_zjh"
             android:fontFamily="sans-serif-medium"

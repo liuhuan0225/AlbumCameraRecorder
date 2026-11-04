@@ -334,8 +334,9 @@ class PreviewFragment : BaseFragment() {
                 mIsDisplayCamera = it.getBoolean(PreviewSetting.IS_DISPLAY_CAMERA, false)
                 // 数据源
                 it.getParcelableArrayList<LocalMedia>(PreviewSetting.PREVIEW_DATA)?.let { selection ->
-                    mLocalMedias.addAll(selection)
-                    mSelectedModel.getSelectedData().addAll(selection)
+                    if (mPreviewType != PreviewType.ALBUM_FRAGMENT) {
+                        mSelectedModel.getSelectedData().addAll(selection)
+                    }
                     mMainModel.previewPosition = it.getInt(PreviewSetting.CURRENT_POSITION, 0)
                 }
             }
@@ -393,7 +394,12 @@ class PreviewFragment : BaseFragment() {
      */
     private fun initViewPagerData() {
         mAdapter = PreviewPagerAdapter(mContext, requireActivity(), mIsDisplayCamera)
-        mLocalMedias.addAll(mMainModel.getLocalMedias())
+        val previewData = arguments?.getParcelableArrayList<LocalMedia>(PreviewSetting.PREVIEW_DATA)
+        if (previewData != null && previewData.isNotEmpty()) {
+            mLocalMedias.addAll(previewData)
+        } else {
+            mLocalMedias.addAll(mMainModel.getLocalMedias())
+        }
         mAdapter.addAll(mLocalMedias)
         mAdapter.notifyItemRangeChanged(0, mLocalMedias.size)
         mViewPager2.adapter = mAdapter

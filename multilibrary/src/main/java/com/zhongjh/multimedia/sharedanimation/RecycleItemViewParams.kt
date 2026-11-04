@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.zhongjh.common.utils.LogUtil
 
@@ -66,7 +67,10 @@ object RecycleItemViewParams {
         // 获取第一个、最后一个的可视position，列表总数
         val totalCount: Int
         if (viewGroup is RecyclerView) {
-            val layoutManager = viewGroup.layoutManager as GridLayoutManager? ?: return
+            val layoutManager = when (viewGroup.layoutManager) {
+                is LinearLayoutManager -> viewGroup.layoutManager as LinearLayoutManager
+                else -> viewGroup.layoutManager as GridLayoutManager
+            }
             totalCount = layoutManager.itemCount
             firstPosition = layoutManager.findFirstVisibleItemPosition()
             lastPosition = layoutManager.findLastVisibleItemPosition()

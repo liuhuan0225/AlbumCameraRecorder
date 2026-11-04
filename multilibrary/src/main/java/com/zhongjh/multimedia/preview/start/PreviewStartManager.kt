@@ -28,11 +28,12 @@ object PreviewStartManager {
      * @param isDisplayCamera 相册界面是否显示拍照
      */
     @JvmStatic
-    fun startPreviewActivityByAlbum(activity: Activity, isDisplayCamera: Boolean, cutscenesEnabled: Boolean, previewActivityResult: ActivityResultLauncher<Intent>, localMedias: ArrayList<LocalMedia>) {
+    fun startPreviewActivityByAlbum(activity: Activity, isDisplayCamera: Boolean, cutscenesEnabled: Boolean, previewActivityResult: ActivityResultLauncher<Intent>, localMedias: ArrayList<LocalMedia>, position: Int = 0) {
         val intent = Intent(activity, PreviewActivity::class.java)
         // 支持所有功能
         PreviewSetting(PreviewType.ALBUM_ACTIVITY)
-            .setLocalMediaArrayList(localMedias)
+            .setLocalMediaArrayList(localMedias ?: ArrayList<LocalMedia>())
+            .setCurrentPosition(position)
             .isDisplayCamera(isDisplayCamera)
             .setIntent(intent)
         previewActivityResult.launch(intent)
@@ -50,7 +51,7 @@ object PreviewStartManager {
      * @param isDisplayCamera 相册界面是否显示拍照
      */
     @JvmStatic
-    fun startPreviewFragmentByAlbum(mainActivity: MainActivity, isDisplayCamera: Boolean) {
+    fun startPreviewFragmentByAlbum(mainActivity: MainActivity, isDisplayCamera: Boolean, localMedias: ArrayList<LocalMedia>? = null, position: Int = 0) {
         // 隐藏底部控件
         mainActivity.showHideTableLayoutAnimator(false)
         val fragment: Fragment = PreviewFragment()
@@ -59,6 +60,8 @@ object PreviewStartManager {
         PreviewSetting(PreviewType.ALBUM_FRAGMENT)
             .isDisplayCamera(isDisplayCamera)
             .setBundle(bundle)
+        bundle.putParcelableArrayList(PreviewSetting.PREVIEW_DATA, localMedias)
+        bundle.putInt(PreviewSetting.CURRENT_POSITION, position)
         fragment.arguments = bundle
         mainActivity.supportFragmentManager
             .beginTransaction()

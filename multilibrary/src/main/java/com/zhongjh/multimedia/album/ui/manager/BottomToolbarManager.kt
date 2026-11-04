@@ -1,9 +1,11 @@
 package com.zhongjh.multimedia.album.ui.manager
 
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.zhongjh.common.entity.LocalMedia
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.databinding.FragmentAlbumZjhBinding
@@ -15,16 +17,31 @@ class BottomToolbarManager(
     private val originalManage: OriginalManage,
     private val placeholder: Drawable,
     private val selectedMediaProvider: () -> List<LocalMedia>,
+    private val onPreviewMedia: (Int) -> Unit,
     private val onRemoveMedia: (LocalMedia) -> Unit
 ) {
 
-    private val selectedMediaAdapter = SelectedMediaBarAdapter(placeholder, onRemoveMedia)
+    private val selectedMediaAdapter = SelectedMediaBarAdapter(placeholder, onPreviewMedia, onRemoveMedia)
 
     init {
         binding.rvSelectedMedia.layoutManager = LinearLayoutManager(
             binding.root.context, LinearLayoutManager.HORIZONTAL, false
         )
         binding.rvSelectedMedia.adapter = selectedMediaAdapter
+        binding.rvSelectedMedia.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                if (parent.getChildAdapterPosition(view) > 0) {
+                    outRect.left = binding.root.context.resources.getDimensionPixelSize(
+                        R.dimen.z_selected_media_bar_spacing
+                    )
+                }
+            }
+        })
     }
 
     /**

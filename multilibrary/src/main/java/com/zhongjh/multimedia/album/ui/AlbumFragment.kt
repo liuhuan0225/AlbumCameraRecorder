@@ -371,7 +371,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 预览事件
         mBinding.buttonPreview.setOnClickListener(object : OnMoreClickListener() {
             override fun onListener(v: View) {
-                startPreviewActivityByAlbum(requireActivity(), isDisplayCamera(), mGlobalSpec.cutscenesEnabled, mPreviewActivityResult, mSelectedModel.getSelectedData().getSelectedMediaArrayList())
+                startPreviewActivityByAlbum(requireActivity(), isDisplayCamera(), mGlobalSpec.cutscenesEnabled, mPreviewActivityResult, mSelectedModel.getSelectedData().getSelectedMediaArrayList(), 0)
             }
         })
 
@@ -707,8 +707,21 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             selectedMediaProvider = {
                 mSelectedModel.getSelectedData().getSelectedMediaArrayList()
             },
+            onPreviewMedia = ::previewSelectedMedia,
             onRemoveMedia = ::removeSelectedMedia
         )
+    }
+
+    /**
+     * 从底部栏预览已选择的媒体
+     */
+    private fun previewSelectedMedia(position: Int) {
+        if (isFastDoubleClick()) {
+            return
+        }
+        mMainModel.previewPosition = position
+        add(mBinding.rvSelectedMedia, dip2px(0f))
+        startPreviewFragmentByAlbum(requireActivity() as MainActivity, false, mSelectedModel.getSelectedData().getSelectedMediaArrayList(), position)
     }
 
     /**
