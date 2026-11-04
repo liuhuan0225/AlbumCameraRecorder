@@ -172,13 +172,7 @@ class MediaGrid : SquareFrameLayout, View.OnClickListener {
      */
     fun setCheckedNum(checkedNum: Int) {
         mCheckView.setCheckedNum(checkedNum)
-        if (checkedNum > 0) {
-            // 设置遮罩层
-            mImageView.colorFilter = selectColorFilter
-        } else {
-            // 恢复
-            mImageView.colorFilter = defaultColorFilter
-        }
+        updateSelectedOverlay(checkedNum > 0)
     }
 
     /**
@@ -188,12 +182,14 @@ class MediaGrid : SquareFrameLayout, View.OnClickListener {
      */
     fun setChecked(checked: Boolean) {
         mCheckView.setChecked(checked)
-        if (checked) {
-            // 设置遮罩层
-            mImageView.colorFilter = selectColorFilter
+        updateSelectedOverlay(checked)
+    }
+
+    private fun updateSelectedOverlay(selected: Boolean) {
+        mImageView.colorFilter = if (selected && AlbumSpec.singleSelectionModeEnabled()) {
+            selectColorFilter
         } else {
-            // 恢复
-            mImageView.colorFilter = defaultColorFilter
+            defaultColorFilter
         }
     }
 

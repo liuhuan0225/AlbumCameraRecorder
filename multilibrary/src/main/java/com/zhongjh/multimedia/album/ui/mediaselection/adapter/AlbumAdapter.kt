@@ -217,9 +217,7 @@ class AlbumAdapter(
             if (checkedNum == CheckView.UNCHECKED) {
                 // 如果当前数据是未选状态
                 if (assertAddSelection(context, item)) {
-                    // 动画
-                    val animation = AnimationUtils.loadAnimation(context, R.anim.album_item_anim_select)
-                    imageView.startAnimation(animation)
+//                    updateSelectAnimation(imageView, context)
                     // 添加选择了当前数据
                     mSelectedModel.addSelectedData(item, position)
                 }
@@ -234,13 +232,20 @@ class AlbumAdapter(
                 mSelectedModel.removeSelectedData(item, position)
             } else {
                 if (assertAddSelection(context, item)) {
-                    // 动画
-                    val animation = AnimationUtils.loadAnimation(context, R.anim.album_item_anim_select)
-                    imageView.startAnimation(animation)
+//                    updateSelectAnimation(imageView, context)
                     // 添加选择了当前数据
                     mSelectedModel.addSelectedData(item, position)
                 }
             }
+        }
+    }
+
+    private fun updateSelectAnimation(imageView: ImageView, context: Context) {
+        if (mAlbumSpec.singleSelectionModeEnabled()) {
+            val animation = AnimationUtils.loadAnimation(context, R.anim.album_item_anim_select)
+            imageView.startAnimation(animation)
+        } else {
+            imageView.clearAnimation()
         }
     }
 

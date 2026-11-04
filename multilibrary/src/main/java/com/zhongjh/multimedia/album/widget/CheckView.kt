@@ -22,19 +22,12 @@ class CheckView : View {
     private var mSingleSelection = false
     private var mChecked = false
     private var mCheckedNum = 0
-    private lateinit var mStrokePaint: Paint
-    private val mBackgroundPaint by lazy {
-        initBackgroundPaint()
-    }
     private val mTextPaint by lazy {
         initTextPaint()
     }
-    private val mShadowPaint by lazy {
-        initShadowPaint()
-    }
-    private var mCheckDrawable: Drawable? = null
+    private var mEmptyCircleDrawable: Drawable? = null
+    private var mSelectedCircleDrawable: Drawable? = null
     private var mDensity = 0f
-    private var mCheckRect: Rect? = null
     private var mEnabled = true
 
     constructor(context: Context) : super(context) {
@@ -61,24 +54,13 @@ class CheckView : View {
 
     private fun init(context: Context) {
         mDensity = context.resources.displayMetrics.density
-        mStrokePaint = Paint()
-        mStrokePaint.isAntiAlias = true
-        mStrokePaint.style = Paint.Style.STROKE
-        mStrokePaint.xfermode =
-            PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
-        mStrokePaint.strokeWidth = STROKE_WIDTH * mDensity
-        val ta =
-            getContext().theme.obtainStyledAttributes(intArrayOf(R.attr.item_checkCircle_borderColor))
-        val defaultColor = ResourcesCompat.getColor(
-            resources, R.color.blue_item_checkCircle_borderColor,
-            getContext().theme
-        )
-        val color = ta.getColor(0, defaultColor)
-        ta.recycle()
-        mStrokePaint.color = color
-        mCheckDrawable = ResourcesCompat.getDrawable(
+        mEmptyCircleDrawable = ResourcesCompat.getDrawable(
             context.resources,
-            R.drawable.ic_check_white_zhongjh, context.theme
+            R.drawable.ic_check_circle_empty, context.theme
+        )
+        mSelectedCircleDrawable = ResourcesCompat.getDrawable(
+            context.resources,
+            R.drawable.ic_check_circle_selected, context.theme
         )
     }
 
@@ -138,86 +120,24 @@ class CheckView : View {
             return
         }
 
-        // draw outer and inner shadow
-        initShadowPaint()
-        canvas.drawCircle(
-            SIZE.toFloat() * mDensity / 2, SIZE.toFloat() * mDensity / 2,
-            (STROKE_RADIUS + STROKE_WIDTH / 2 + SHADOW_WIDTH) * mDensity, mShadowPaint
-        )
+        mEmptyCircleDrawable?.setBounds(0, 0, width, height)
+        mEmptyCircleDrawable?.draw(canvas)
 
-        // draw white stroke
-        canvas.drawCircle(
-            SIZE.toFloat() * mDensity / 2, SIZE.toFloat() * mDensity / 2,
-            STROKE_RADIUS * mDensity, mStrokePaint
-        )
-
-        // draw content
-        if (mCountable) {
-            if (mCheckedNum != UNCHECKED) {
-                initBackgroundPaint()
-                canvas.drawCircle(
-                    SIZE.toFloat() * mDensity / 2, SIZE.toFloat() * mDensity / 2,
-                    BG_RADIUS * mDensity, mBackgroundPaint
-                )
+        val isSelected = if (mCountable) mCheckedNum != UNCHECKED else mChecked
+        if (isSelected) {
+            mSelectedCircleDrawable?.setBounds(0, 0, width, height)
+            mSelectedCircleDrawable?.draw(canvas)
+            if (mCountable) {
                 initTextPaint()
                 val text = mCheckedNum.toString()
                 val baseX = (width - mTextPaint.measureText(text)).toInt() / 2
                 val baseY = (height - mTextPaint.descent() - mTextPaint.ascent()).toInt() / 2
                 canvas.drawText(text, baseX.toFloat(), baseY.toFloat(), mTextPaint)
             }
-        } else {
-            if (mChecked) {
-                initBackgroundPaint()
-                canvas.drawCircle(
-                    SIZE * mDensity / 2, SIZE * mDensity / 2,
-                    BG_RADIUS * mDensity, mBackgroundPaint
-                )
-                mCheckDrawable!!.bounds = checkRect
-                mCheckDrawable!!.draw(canvas)
-            }
         }
 
         // enable hint
         alpha = if (mEnabled) 1.0f else 0.5f
-    }
-
-    private fun initShadowPaint(): Paint {
-        val shadowPaint = Paint()
-        shadowPaint.isAntiAlias = true
-        // all in dp
-        val outerRadius = STROKE_RADIUS + STROKE_WIDTH / 2
-        val innerRadius = outerRadius - STROKE_WIDTH
-        val gradientRadius = outerRadius + SHADOW_WIDTH
-        val stop0 = (innerRadius - SHADOW_WIDTH) / gradientRadius
-        val stop1 = innerRadius / gradientRadius
-        val stop2 = outerRadius / gradientRadius
-        val stop3 = 1.0f
-        shadowPaint.shader = RadialGradient(
-            SIZE.toFloat() * mDensity / 2,
-            SIZE.toFloat() * mDensity / 2,
-            gradientRadius * mDensity, intArrayOf(
-                Color.parseColor("#00000000"), Color.parseColor("#0D000000"),
-                Color.parseColor("#0D000000"), Color.parseColor("#00000000")
-            ), floatArrayOf(stop0, stop1, stop2, stop3),
-            Shader.TileMode.CLAMP
-        )
-        return shadowPaint
-    }
-
-    private fun initBackgroundPaint(): Paint {
-        val backgroundPaint = Paint()
-        backgroundPaint.isAntiAlias = true
-        backgroundPaint.style = Paint.Style.FILL
-        val ta = context.theme
-            .obtainStyledAttributes(intArrayOf(R.attr.item_checkCircle_backgroundColor))
-        val defaultColor = ResourcesCompat.getColor(
-            resources, R.color.blue_item_checkCircle_backgroundColor,
-            context.theme
-        )
-        val color = ta.getColor(0, defaultColor)
-        ta.recycle()
-        backgroundPaint.color = color
-        return backgroundPaint
     }
 
     private fun initTextPaint(): TextPaint {
@@ -232,53 +152,12 @@ class CheckView : View {
         return textPaint
     }
 
-    /**
-     * rect for drawing checked number or mark
-     * @return rect
-     */
-    private val checkRect: Rect
-        get() {
-            if (mCheckRect == null) {
-                val rectPadding = (SIZE * mDensity / 2 - CONTENT_SIZE * mDensity / 2).toInt()
-                mCheckRect = Rect(
-                    rectPadding, rectPadding,
-                    (SIZE * mDensity - rectPadding).toInt(), (SIZE * mDensity - rectPadding).toInt()
-                )
-            }
-            return mCheckRect!!
-        }
-
     companion object {
         const val UNCHECKED = Int.MIN_VALUE
 
         /**
          * dp
          */
-        private const val STROKE_WIDTH = 2.4f  // 3.0f * 0.8 = 2.4f
-
-        /**
-         * dp
-         */
-        private const val SHADOW_WIDTH = 4.8f  // 6.0f * 0.8 = 4.8f
-
-        /**
-         * dp
-         */
-        private const val SIZE = 38.4f             // 48 * 0.8 = 38.4 → 整型取整（若需保留浮点可改为 38.4f）
-
-        /**
-         * dp
-         */
-        private const val STROKE_RADIUS = 9.2f  // 11.5f * 0.8 = 9.2f
-
-        /**
-         * dp
-         */
-        private const val BG_RADIUS = 8.8f      // 11.0f * 0.8 = 8.8f
-
-        /**
-         * dp
-         */
-        private const val CONTENT_SIZE = 12.8f     // 16 * 0.8 = 12.8 → 整型取整（若需保留浮点可改为 12.8f）
+        private const val SIZE = 28f
     }
 }
