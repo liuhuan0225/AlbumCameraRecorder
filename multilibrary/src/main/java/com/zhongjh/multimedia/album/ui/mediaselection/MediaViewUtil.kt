@@ -177,6 +177,18 @@ class MediaViewUtil(
     }
 
     /**
+     * 从选中列表移除指定媒体，并返回它在媒体网格中的索引
+     */
+    fun removeSelectedMedia(item: LocalMedia): Int {
+        val position = mAdapter?.getItemPosition(item) ?: -1
+        selectedModel.removeSelectedData(item, position)
+        if (position != RecyclerView.NO_POSITION) {
+            mAdapter?.notifyDataItemChanged(position)
+        }
+        return position
+    }
+
+    /**
      * 设置长按滑动选择功能
      */
     private fun setupLongPressSlideSelection() {

@@ -22,4 +22,7 @@
     <color name="spinner_bottom_line_color">#80000000</color>
 
     <color name="ps_color_80">#80000000</color>
+
+    <color name="album_bottom_bar_color">#19171C</color>
+    <color name="album_bottom_next_color">#FF7522</color>
 </resources>

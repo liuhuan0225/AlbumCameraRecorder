@@ -137,25 +137,43 @@
     <com.zhongjh.multimedia.widget.ConstraintLayoutBehavior
         android:id="@+id/bottomToolbar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="152dp"
         android:layout_gravity="bottom|end"
-        android:background="?attr/bottomToolbar.bg"
+        android:background="@color/album_bottom_bar_color"
         android:elevation="1dp"
         app:layout_behavior="com.zhongjh.multimedia.widget.BottomBarBehavior"
-        tools:layout_height="50dp">
+        tools:layout_height="152dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSelectedMedia"
+            android:layout_width="match_parent"
+            android:layout_height="76dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:overScrollMode="never"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:listitem="@layout/item_selected_media_bar_zjh" />
 
         <TextView
             android:id="@+id/buttonPreview"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="?android:attr/selectableItemBackground"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_album_bottom_preview_zjh"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:text="@string/z_multi_library_button_preview"
-            android:textColor="?attr/bottomToolbar.preview.textColor"
+            android:textColor="@color/album_bottom_button_text_zjh"
             android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintWidth_min="167dp" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/groupOriginal"
@@ -224,20 +242,23 @@
         <TextView
             android:id="@+id/buttonApply"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
             android:layout_gravity="end"
-            android:background="?android:attr/selectableItemBackground"
+            android:background="@drawable/bg_album_bottom_next_zjh"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:textColor="?attr/bottomToolbar.apply.textColor"
+            android:textColor="@color/album_bottom_button_text_zjh"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_min="167dp" />
 
         <ProgressBar
             android:id="@+id/pbLoading"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
             android:layout_gravity="end"
             android:indeterminateTint="?attr/bottomToolbar.apply.textColor"
             android:indeterminateTintMode="src_atop"
@@ -246,6 +267,7 @@
             android:paddingRight="16dp"
             android:paddingBottom="8dp"
             android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:visibility="visible" />
 

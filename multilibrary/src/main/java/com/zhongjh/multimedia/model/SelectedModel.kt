@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.asStateFlow
  * 选中变更事件
  * @param position 当前操作索引
  * @param isMaxStateChanged 是否引起「达到上限/解除上限」状态切换
+ * @param isOrderChanged 是否可能引起已选序号变化
  */
 data class SelectChangeEvent(
     val position: Int,
-    val isMaxStateChanged: Boolean
+    val isMaxStateChanged: Boolean,
+    val isOrderChanged: Boolean
 )
 
 /**
@@ -59,7 +61,8 @@ class SelectedModel(application: Application) : AndroidViewModel(application) {
         val afterMax = selectedData.maxSelectableReached()
         val event = SelectChangeEvent(
             position = position,
-            isMaxStateChanged = beforeMax != afterMax
+            isMaxStateChanged = beforeMax != afterMax,
+            isOrderChanged = false
         )
         // 通知更新
         _selectedDataChangeEvent.tryEmit(event)
@@ -79,7 +82,8 @@ class SelectedModel(application: Application) : AndroidViewModel(application) {
 
         val event = SelectChangeEvent(
             position = position,
-            isMaxStateChanged = beforeMax != afterMax
+            isMaxStateChanged = beforeMax != afterMax,
+            isOrderChanged = true
         )
         // 通知更新
         _selectedDataChangeEvent.tryEmit(event)

@@ -317,8 +317,8 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             mBinding.recyclerview.isNestedScrollingEnabled = false
             val params = mBinding.toolbar.layoutParams as AppBarLayout.LayoutParams
             params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
-            mBinding.emptyView.setPadding(0, 0, 0, dip2px(50f))
-            mBinding.recyclerview.setPadding(0, 0, 0, dip2px(50f))
+            mBinding.emptyView.setPadding(0, 0, 0, dip2px(152f))
+            mBinding.recyclerview.setPadding(0, 0, 0, dip2px(152f))
         }
     }
 
@@ -465,8 +465,8 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 选择数据改变
         LifecycleFlowCollector.collect(this, mSelectedModel.selectedDataChangeEvent) { event ->
             LogUtil.d("AlbumFragmentFlow", "mSelectedModel.selectedDataChange event=$event")
-            if (event.isMaxStateChanged) {
-                // 上限状态变更，刷新屏幕所有可见条目（需要更新置灰）
+            if (event.isMaxStateChanged || event.isOrderChanged) {
+                // 上限状态或选中序号变更，刷新屏幕所有可见条目
                 mMediaViewUtil?.notifyRangeVisible()
             } else {
                 // 上限无变化，仅刷新当前操作条目
@@ -700,8 +700,23 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         mBottomToolbarManager = BottomToolbarManager(
             binding = mBinding,
             albumSpec = mAlbumSpec,
-            originalManage = mOriginalManage
+            originalManage = mOriginalManage,
+            placeholder = ContextCompat.getDrawable(
+                requireContext(), R.drawable.album_spinner_thumbnail_bg
+            )!!,
+            selectedMediaProvider = {
+                mSelectedModel.getSelectedData().getSelectedMediaArrayList()
+            },
+            onRemoveMedia = ::removeSelectedMedia
         )
+    }
+
+    /**
+     * 从底部栏移除已选择的媒体
+     */
+    private fun removeSelectedMedia(item: LocalMedia) {
+        mMediaViewUtil?.removeSelectedMedia(item)
+        updateBottomToolbar()
     }
 
     override fun onDestroyView() {

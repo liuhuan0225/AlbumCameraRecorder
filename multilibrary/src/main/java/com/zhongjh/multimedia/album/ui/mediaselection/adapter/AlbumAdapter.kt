@@ -166,6 +166,17 @@ class AlbumAdapter(
     }
 
     /**
+     * 根据媒体文件ID返回媒体网格中的索引
+     */
+    fun getItemPosition(item: LocalMedia): Int {
+        val dataPosition = data.indexOfFirst { it.fileId == item.fileId }
+        if (dataPosition == -1) {
+            return -1
+        }
+        return if (isDisplayCamera()) dataPosition + 1 else dataPosition
+    }
+
+    /**
      * 设置当前选择状态
      *
      * @param item      数据

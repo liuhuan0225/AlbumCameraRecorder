@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="56dp"
+    android:layout_height="76dp">
+
+    <ImageView
+        android:id="@+id/ivSelectedMedia"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:contentDescription="@string/z_multi_library_show_thumbnails"
+        android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/ivRemoveSelectedMedia"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/bg_selected_media_delete_zjh"
+        android:contentDescription="@string/z_multi_library_delete_button"
+        android:src="@drawable/ic_selected_media_delete_zjh" />
+
+    <FrameLayout
+        android:id="@+id/flVideoDuration"
+        android:layout_width="56dp"
+        android:layout_height="24dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_selected_video_duration_zjh"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/tvSelectedVideoDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="4dp"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText"
+            tools:text="08:12" />
+
+    </FrameLayout>
+
+</FrameLayout>
