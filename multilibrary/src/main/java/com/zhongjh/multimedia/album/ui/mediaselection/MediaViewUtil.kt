@@ -42,6 +42,7 @@ class MediaViewUtil(
     private var checkStateListener: AlbumAdapter.CheckStateListener?, private var onMediaClickListener: AlbumAdapter.OnMediaClickListener?
 ) : AlbumAdapter.CheckStateListener, AlbumAdapter.OnMediaClickListener {
 
+    private val albumDebugTag = "AlbumDebug"
     private var mAdapter: AlbumAdapter? = null
     private lateinit var mAlbum: Album
     private var mAlbumSpec = AlbumSpec
@@ -82,7 +83,13 @@ class MediaViewUtil(
         setupLongPressSlideSelection()
 
         // 加载更多事件
-        recyclerView.setOnRecyclerViewLoadMoreListener { mainModel.addAllPageMediaData(mAlbum.id, mAlbumSpec.pageSize) }
+        recyclerView.setOnRecyclerViewLoadMoreListener {
+            LogUtil.d(
+                albumDebugTag,
+                "media loadMore triggered bucketId=${mAlbum.id} album=${mAlbum.name} itemCount=${recyclerView.adapter?.itemCount ?: -1} page=${mAlbumSpec.pageSize}"
+            )
+            mainModel.addAllPageMediaData(mAlbum.id, mAlbumSpec.pageSize)
+        }
 
         // 滑动事件
         recyclerView.setOnRecyclerViewScrollStateListener(object : OnRecyclerViewScrollStateListener {
@@ -99,15 +106,28 @@ class MediaViewUtil(
             when (state) {
                 // 监听到新的相册数据
                 is MainModel.MediaPageState.RefreshSuccess -> {
-                    LogUtil.d("AlbumFragmentFlow","mainModel.mediaPageState")
+                    LogUtil.d(
+                        albumDebugTag,
+                        "media refresh bucketId=${state.bucketId} itemCount=${state.refreshMediaData.data.size} pageSize=$mAlbumSpec.pageSize " +
+                            "first=${state.refreshMediaData.data.firstOrNull()?.let { "fileId=${it.fileId} bucketId=${it.bucketId} bucket=${it.parentFolderName} path=${it.absolutePath}" }}"
+                    )
                     // 如果没有数据，则关闭下拉加载
-                    recyclerView.setEnabledLoadMore(state.refreshMediaData.data.isNotEmpty())
+                    val enabledLoadMore = state.refreshMediaData.data.isNotEmpty() && state.refreshMediaData.data.size >= mAlbumSpec.pageSize
+                    LogUtil.d(albumDebugTag, "media setEnabledLoadMore=$enabledLoadMore")
+                    recyclerView.setEnabledLoadMore(
+                        state.refreshMediaData.data.isNotEmpty() && state.refreshMediaData.data.size >= mAlbumSpec.pageSize
+                    )
                     mAdapter?.setReloadPageMediaData(state.bucketId, state.refreshMediaData)
                     recyclerView.scrollToPosition(0)
                 }
 
                 // 监听到下拉加载相册数据
                 is MainModel.MediaPageState.LoadMoreSuccess -> {
+                    LogUtil.d(
+                        albumDebugTag,
+                        "media loadMore success startPosition=${state.startPosition} itemCount=${state.itemCount} " +
+                            "newFirst=${state.data.getOrNull(state.startPosition)?.let { "position=${it.position} fileId=${it.fileId} bucketId=${it.bucketId} path=${it.absolutePath}" }}"
+                    )
                     // 如果没有数据，则关闭下拉加载
                     recyclerView.setEnabledLoadMore(state.startPosition != -1)
                     mAdapter?.notifyDataInserted(state.data, state.startPosition)
@@ -137,6 +157,7 @@ class MediaViewUtil(
      * @param album 专辑
      */
     fun load(album: Album) {
+        LogUtil.d(albumDebugTag, "media load albumId=${album.id} album=${album.name} count=${album.count} first=${album.firstImagePath}")
         mAlbum = album
         mainModel.reloadPageMediaData(mAlbum.id, mAlbumSpec.pageSize)
     }

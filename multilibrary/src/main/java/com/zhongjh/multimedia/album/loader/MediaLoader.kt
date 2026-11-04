@@ -36,6 +36,7 @@ class MediaLoader(private val context: Context) {
     companion object {
 
         private val TAG = MediaLoader::class.java.simpleName
+        private const val ALBUM_DEBUG_TAG = "AlbumDebug"
         private const val ALL_BUCKET_ID = -1L
         private const val DURATION: String = "duration"
         private const val BUCKET_DISPLAY_NAME = "bucket_display_name"
@@ -84,11 +85,17 @@ class MediaLoader(private val context: Context) {
             val sortOrderStr = getSortOrder()
             LogUtil.d(TAG, "查询语句: $albumSelectionStr 排序语句: $sortOrderStr")
             LogUtil.d("readContent", "context.contentResolver.query(QUERY_URI, PROJECTION, albumSelectionStr, getSelectionArgs(), sortOrderStr)")
+            LogUtil.d(
+                ALBUM_DEBUG_TAG,
+                "loadAlbums start uri=$QUERY_URI selection=$albumSelectionStr args=${getSelectionArgs().joinToString()} sort=$sortOrderStr " +
+                    "onlyImages=${AlbumSpec.onlyShowImages()} onlyVideos=${AlbumSpec.onlyShowVideos()} mimeTypes=${AlbumSpec.mimeTypeSet}"
+            )
             context.contentResolver.query(QUERY_URI, PROJECTION, albumSelectionStr, getSelectionArgs(), sortOrderStr)?.use { data ->
                 if (data.count > 0) {
                     var totalCount = 0L
                     val bucketSet = hashSetOf<Long>()
                     val countMap = hashMapOf<Long, Long>()
+                    val rowDebug = mutableListOf<String>()
                     data.moveToFirst()
                     do {
                         val media = parse(data)
@@ -100,6 +107,7 @@ class MediaLoader(private val context: Context) {
                         }
                         // 根据不同的bucketId划分不同的专辑
                         countMap[media.bucketId] = newCount
+                        rowDebug += "row=${rowDebug.size} fileId=${media.fileId} bucketId=${media.bucketId} bucket=${media.parentFolderName} mime=${media.mimeType} path=${media.absolutePath}"
                         if (bucketSet.contains(media.bucketId)) {
                             continue
                         }
@@ -111,6 +119,8 @@ class MediaLoader(private val context: Context) {
                         albumList += album
                         bucketSet.add(media.bucketId)
                     } while (data.moveToNext())
+                    LogUtil.d(ALBUM_DEBUG_TAG, "loadAlbums rows=${rowDebug.size} ${rowDebug.joinToString(separator=" | ")}")
+                    LogUtil.d(ALBUM_DEBUG_TAG, "loadAlbums countMap=$countMap")
 
                     // 计算每个相册的数量
                     albumList.forEach { album ->
@@ -131,6 +141,7 @@ class MediaLoader(private val context: Context) {
                         album.firstMimeType = firstAlbum.firstMimeType
                     }
                     albumList.add(0, album)
+                    LogUtil.d(ALBUM_DEBUG_TAG, "loadAlbums result=${albumList.joinToString { "bucketId=${it.id} bucket=${it.name} count=${it.count} first=${it.firstImagePath}" }}")
                 }
                 // 关闭 cursor
                 data.close()
@@ -156,11 +167,29 @@ class MediaLoader(private val context: Context) {
             } else {
                 getSelectionArgs().plusElement(bucketId.toString())
             }
+            val selection = getSelection(bucketId)
+            LogUtil.d(
+                ALBUM_DEBUG_TAG,
+                "loadMediaMore start bucketId=$bucketId page=$page pageSize=$pageSize offset=${(page - 1) * pageSize} uri=$QUERY_URI selection=$selection args=${selectionArgs.joinToString()} " +
+                    "isR=${SdkVersionUtils.isR} isO=${SdkVersionUtils.isO}"
+            )
             if (SdkVersionUtils.isR) {
                 LogUtil.d("readContent", "context.contentResolver.query(1")
+                val queryArgs = createQueryArgsBundle(selection, selectionArgs, pageSize, (page - 1) * pageSize, getSortOrder())
+                LogUtil.d(
+                    ALBUM_DEBUG_TAG,
+                    "loadMediaMore queryBundle selection=${queryArgs.getString(ContentResolver.QUERY_ARG_SQL_SELECTION)} " +
+                        "args=${queryArgs.getStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS)?.joinToString()} " +
+                        "sort=${queryArgs.getString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER)} limit=${queryArgs.getString(ContentResolver.QUERY_ARG_SQL_LIMIT)}"
+                )
                 context.contentResolver.query(
-                    QUERY_URI, PROJECTION, createQueryArgsBundle(getSelection(bucketId), selectionArgs, pageSize, (page - 1) * pageSize, getSortOrder()), null
+                    QUERY_URI, PROJECTION, queryArgs, null
                 )?.use { cursor ->
+                    LogUtil.d(
+                        ALBUM_DEBUG_TAG,
+                        "loadMediaMore bundle cursorCount=${cursor.count} columnCount=${cursor.columnCount} " +
+                            "columns=${cursor.columnNames.joinToString()}"
+                    )
                     if (cursor.count > 0) {
                         while (cursor.moveToNext()) {
                             val media = parse(cursor)
@@ -168,13 +197,24 @@ class MediaLoader(private val context: Context) {
                             media.position = (page - 1) * pageSize + mediaList.size
                             mediaList += media
                         }
+                        LogUtil.d(
+                            ALBUM_DEBUG_TAG,
+                            "loadMediaMore bundle result=${mediaList.joinToString { "position=${it.position} fileId=${it.fileId} bucketId=${it.bucketId} bucket=${it.parentFolderName} path=${it.absolutePath}" }}"
+                        )
                     }
                     // close cursor
                     cursor.close()
                 }
             } else {
                 LogUtil.d("readContent", "context.contentResolver.query(2")
-                context.contentResolver.query(QUERY_URI, PROJECTION, getSelection(bucketId), selectionArgs, getSortOrder() + " limit " + pageSize + " offset " + (page - 1) * pageSize)?.use { cursor ->
+                val sqlSort = getSortOrder() + " limit " + pageSize + " offset " + (page - 1) * pageSize
+                LogUtil.d(ALBUM_DEBUG_TAG, "loadMediaMore sqlSort=$sqlSort")
+                context.contentResolver.query(QUERY_URI, PROJECTION, selection, selectionArgs, sqlSort)?.use { cursor ->
+                    LogUtil.d(
+                        ALBUM_DEBUG_TAG,
+                        "loadMediaMore sql cursorCount=${cursor.count} columnCount=${cursor.columnCount} " +
+                            "columns=${cursor.columnNames.joinToString()}"
+                    )
                     if (cursor.count > 0) {
                         while (cursor.moveToNext()) {
                             val media = parse(cursor)
@@ -182,6 +222,10 @@ class MediaLoader(private val context: Context) {
                             media.position = (page - 1) * pageSize + mediaList.size
                             mediaList += media
                         }
+                        LogUtil.d(
+                            ALBUM_DEBUG_TAG,
+                            "loadMediaMore sql result=${mediaList.joinToString { "position=${it.position} fileId=${it.fileId} bucketId=${it.bucketId} bucket=${it.parentFolderName} path=${it.absolutePath}" }}"
+                        )
                     }
                     // close cursor
                     cursor.close()

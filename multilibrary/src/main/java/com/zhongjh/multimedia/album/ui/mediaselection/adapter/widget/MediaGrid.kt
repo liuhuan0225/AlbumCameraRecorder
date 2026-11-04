@@ -19,6 +19,7 @@ import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.album.widget.CheckView
 import com.zhongjh.multimedia.album.widget.SquareFrameLayout
 import com.zhongjh.multimedia.settings.GlobalSpec.imageEngine
+import com.zhongjh.multimedia.settings.AlbumSpec
 
 /**
  * @author zhongjh
@@ -97,6 +98,9 @@ class MediaGrid : SquareFrameLayout, View.OnClickListener {
         mImgVideo = findViewById(R.id.imgVideo)
         mImageView.setOnClickListener(this)
         mCheckView.setOnClickListener(this)
+        if (AlbumSpec.singleSelectionModeEnabled()) {
+            mCheckView.visibility = GONE
+        }
         defaultColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(Color.TRANSPARENT, BlendModeCompat.SRC_ATOP)!!
         selectColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
             ContextCompat.getColor(
@@ -147,6 +151,9 @@ class MediaGrid : SquareFrameLayout, View.OnClickListener {
      */
     private fun initCheckView() {
         mCheckView.setCountable(mPreBindInfo.mCheckViewCountable)
+        mCheckView.setSingleSelection(AlbumSpec.singleSelectionModeEnabled())
+        mCheckView.visibility =
+            if (AlbumSpec.singleSelectionModeEnabled()) GONE else VISIBLE
     }
 
     /**

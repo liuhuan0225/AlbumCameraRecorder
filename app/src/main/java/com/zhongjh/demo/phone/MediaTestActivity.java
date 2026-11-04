@@ -106,6 +106,7 @@ public class MediaTestActivity extends AppCompatActivity {
         pendingAction = action;
         actionTitle = title;
         AlbumSetting albumSetting = new AlbumSetting(false)
+                .isDisplayCamera(false)
                 .mimeTypeSet(mimeTypes)
                 .countable(true);
         GlobalSetting globalSetting = MultiMediaSetting.from(this).choose(mimeTypes)

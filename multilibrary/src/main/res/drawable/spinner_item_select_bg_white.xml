@@ -3,5 +3,5 @@
 
     <item android:drawable="@color/blue_album_popup_bg_select" android:state_pressed="true" />
     <item android:drawable="@color/blue_album_popup_bg_select" android:state_selected="true" />
-    <item android:drawable="@color/blue_album_popup_bg" />
+    <item android:drawable="@android:color/transparent" />
 </selector>

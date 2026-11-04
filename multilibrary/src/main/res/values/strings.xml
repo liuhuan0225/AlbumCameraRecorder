@@ -58,6 +58,7 @@
     <string name="z_multi_library_button_original">The original image</string>
     <string name="z_multi_library_button_sure_default">confirm</string>
     <string name="z_multi_library_button_sure">confirm(%1$d)</string>
+    <string name="z_multi_library_single_preview_next">Next</string>
 
     <string name="z_multi_library_show_thumbnails">The thumbnail image displayed</string>
     <string name="z_multi_library_gif_label">GIF label</string>

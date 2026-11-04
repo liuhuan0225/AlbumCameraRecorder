@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/album_picker_background"
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/folder_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:overScrollMode="never"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
         android:scrollbars="none" />
 
-    <View
-        android:id="@+id/rootViewBg"
-        android:layout_width="match_parent"
-        android:layout_height="1000dp"
-        android:layout_below="@id/folder_list"
-        android:alpha="0"
-        android:background="@color/spinner_bottom_line_color" />
 </RelativeLayout>

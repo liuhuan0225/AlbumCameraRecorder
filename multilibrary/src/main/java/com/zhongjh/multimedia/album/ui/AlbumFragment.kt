@@ -361,6 +361,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 下拉框选择的时候
         mAlbumSpinner?.setOnAlbumItemClickListener(object : OnAlbumItemClickListener {
             override fun onItemClick(position: Int, album: Album) {
+                    LogUtil.d("AlbumDebug", "album clicked position=$position albumId=${album.id} album=${album.name} count=${album.count} first=${album.firstImagePath}")
                 // 设置缓存值
                 mMainModel.changeAlbum(album)
                 mAlbumSpinner?.dismiss()
@@ -669,7 +670,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             ta.recycle()
         }
 
-        mAlbumSpinner = AlbumSpinner(mApplicationContext, albumSpinnerStyle)
+        mAlbumSpinner = AlbumSpinner(requireActivity(), albumSpinnerStyle)
         mAlbumSpinner?.setArrowImageView(mBinding.imgArrow)
         mAlbumSpinner?.setTitleTextView(mBinding.tvAlbumTitle)
     }

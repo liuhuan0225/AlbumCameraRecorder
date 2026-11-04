@@ -17,7 +17,6 @@ import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.preview.adapter.PreviewPagerAdapter.PreviewViewHolder
 import com.zhongjh.multimedia.settings.GlobalSpec.imageEngine
 import java.io.File
-import java.lang.ref.WeakReference
 
 /**
  * @author zhongjh
@@ -36,10 +35,10 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
     private val mViewHolderCache = LinkedHashMap<Int, PreviewViewHolder>()
     private var isFirstAttachedToWindow = false
 
-    private var onListener: WeakReference<OnListener>? = null
+    private var onListener: OnListener? = null
 
     fun setOnListener(listener: OnListener) {
-        this.onListener = WeakReference(listener)
+        this.onListener = listener
     }
 
     interface OnListener {
@@ -52,14 +51,27 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
          * 播放视频或者音频触发
          */
         fun onVideoPlay(videoView: VideoView)
+
+        /**
+         * 单击图片预览
+         */
+        fun onImageClick()
     }
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
         super.onViewAttachedToWindow(holder)
         if (!isFirstAttachedToWindow) {
             // 只有第一次初始化该Adapter才触发
-            onListener?.get()?.onViewFirstAttachedToWindow(holder)
+            onListener?.onViewFirstAttachedToWindow(holder)
             isFirstAttachedToWindow = true
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        val position = holder.bindingAdapterPosition
+        if (position != RecyclerView.NO_POSITION && mViewHolderCache[position] === holder) {
+            mViewHolderCache.remove(position)
         }
     }
 
@@ -94,6 +106,9 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
             } else {
                 item.loadNetworkImage(mContext, imageEngine, holder.imageView)
             }
+        }
+        holder.imageView.setOnViewTapListener { _, _, _ ->
+            onListener?.onImageClick()
         }
 
     }
@@ -130,6 +145,7 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
 
     fun onDestroy() {
         mViewHolderCache.clear()
+        onListener = null
     }
 
     /**

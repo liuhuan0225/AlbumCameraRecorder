@@ -82,7 +82,7 @@ class RecyclerLoadMoreView : RecyclerView {
                 var isReachBottom = false
                 if (layoutManager is GridLayoutManager) {
                     // 获取grid模式下的行数
-                    val rowCount = adapter.itemCount / layoutManager.spanCount
+                    val rowCount = (adapter.itemCount + layoutManager.spanCount - 1) / layoutManager.spanCount
                     // 获取grid模式下的可视行数
                     val lastVisibleRowPosition =
                         layoutManager.findLastVisibleItemPosition() / layoutManager.spanCount

@@ -81,7 +81,7 @@ object AlbumSpec {
     /**
      * 如果设置了item宽度的具体数值则计算获得列表的列数，否则使用设置的列数。如果你想要固定的跨度计数，请使用 spanCount(int spanCount)，当方向更改时，范围计数将保持不变。
      */
-    var spanCount = 0
+    var spanCount = 4
 
     /**
      * 设置列宽，默认值为0
@@ -91,7 +91,7 @@ object AlbumSpec {
     /**
      * 网格间距，默认值为2
      */
-    var spacing = 2
+    var spacing = 1
 
     /**
      * 图片缩放比例
@@ -165,9 +165,9 @@ object AlbumSpec {
         countable = true
         selectedEnable = true
         baseFilters = null
-        spanCount = 3
+        spanCount = 4
         gridExpectedSize = 0
-        spacing = 2
+        spacing = 1
         thumbnailScale = 0.5f
         originalEnable = false
         originalMaxSize = Int.MAX_VALUE
@@ -180,12 +180,12 @@ object AlbumSpec {
     }
 
     /**
-     * 是否不显示多选数字和是否单选
+     * 是否单选：不显示数字，或者图片/视频上限都为 1
      *
      * @return 是否
      */
     fun singleSelectionModeEnabled(): Boolean {
-        return !countable && singleImageVideo
+        return !countable || singleImageVideo
     }
 
     /**

@@ -10,6 +10,7 @@ import com.zhongjh.multimedia.album.entity.RefreshMediaData
 import com.zhongjh.multimedia.album.loader.MediaLoader
 import com.zhongjh.multimedia.album.repository.MediaRepository
 import com.zhongjh.multimedia.album.ui.mediaselection.adapter.LocalMediaCallback
+import com.zhongjh.common.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -144,6 +145,7 @@ class MainModel(application: Application) : AndroidViewModel(application) {
     fun reloadPageMediaData(bucketId: Long, pageSize: Int) {
         viewModelScope.launch {
             try {
+                LogUtil.d("AlbumDebug", "media reloadPage bucketId=$bucketId beforePage=$page pageSize=$pageSize")
                 // 从 Repository 获取第一页数据
                 val newMedias = mediaRepository.loadMediaPage(bucketId, page = 1, pageSize).first()
                 // 计算数据差异（IO 线程执行耗时操作）
@@ -184,13 +186,16 @@ class MainModel(application: Application) : AndroidViewModel(application) {
     fun addAllPageMediaData(bucketId: Long, pageSize: Int) {
         viewModelScope.launch {
             try {
+                LogUtil.d("AlbumDebug", "media addPage bucketId=$bucketId beforePage=$page pageSize=$pageSize")
                 // 页码自增
                 page += 1
+                LogUtil.d("AlbumDebug", "media addPage query bucketId=$bucketId page=$page pageSize=$pageSize")
                 val newMedias = mediaRepository.loadMediaPage(bucketId, page, pageSize).first()
 
                 if (newMedias.isNotEmpty()) {
                     // 更新缓存（保留原逻辑）
                     val oldSize = localMedias.size
+                LogUtil.d("AlbumDebug", "media addPage result bucketId=$bucketId page=$page oldSize=$oldSize newSize=${newMedias.size}")
                     localMedias.addAll(newMedias)
                     // 发送加载更多成功状态（用于局部刷新）
                     _mediaPageState.tryEmit(

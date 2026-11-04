@@ -19,6 +19,7 @@ import com.zhongjh.multimedia.R
 class CheckView : View {
 
     private var mCountable = false
+    private var mSingleSelection = false
     private var mChecked = false
     private var mCheckedNum = 0
     private lateinit var mStrokePaint: Paint
@@ -103,6 +104,14 @@ class CheckView : View {
         LogUtil.d("CheckView", "mCountable :$mCountable")
     }
 
+    /**
+     * 单选时不显示勾选圆圈，仅保留选择热区
+     */
+    fun setSingleSelection(singleSelection: Boolean) {
+        mSingleSelection = singleSelection
+        invalidate()
+    }
+
     fun setCheckedNum(checkedNum: Int) {
         check(mCountable) { "CheckView is not countable, call setChecked() instead." }
         require(!(checkedNum != UNCHECKED && checkedNum <= 0)) { "checked num can't be negative." }
@@ -123,6 +132,11 @@ class CheckView : View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        if (mSingleSelection) {
+            // 单选不绘制勾选圆圈，保留透明热区让右上角可继续触发选择
+            return
+        }
 
         // draw outer and inner shadow
         initShadowPaint()

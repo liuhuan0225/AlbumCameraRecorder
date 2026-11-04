@@ -2,8 +2,8 @@ package com.zhongjh.multimedia.album.widget.albumspinner
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +13,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.zhongjh.common.utils.AnimUtils
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.album.entity.Album
 import com.zhongjh.multimedia.album.entity.AlbumSpinnerStyle
@@ -24,42 +23,54 @@ import com.zhongjh.multimedia.album.entity.AlbumSpinnerStyle
  * @author zhongjh
  * @date 2022/9/21
  */
-class AlbumSpinner @SuppressLint("InflateParams") constructor(private val context: Context, private val albumSpinnerStyle: AlbumSpinnerStyle) : PopupWindow() {
-    private val window: View = LayoutInflater.from(context).inflate(R.layout.view_album_spinner_zjh, null)
+class AlbumSpinner constructor(private val context: Context, private val albumSpinnerStyle: AlbumSpinnerStyle) : PopupWindow() {
+    private val window: View = LayoutInflater.from(context).inflate(R.layout.view_album_spinner_zjh, null, false)
     private val mRecyclerView by lazy {
         window.findViewById<RecyclerView>(R.id.folder_list)
     }
     private val adapter by lazy {
         AlbumSpinnerAdapter(albumSpinnerStyle)
     }
-    private var isDismiss = false
     private var ivArrowView: ImageView? = null
     private var tvAlbumTitle: TextView? = null
-    private val rootViewBg by lazy {
-        window.findViewById<View>(R.id.rootViewBg)
-    }
 
     init {
         this.contentView = window
         this.width = RelativeLayout.LayoutParams.MATCH_PARENT
-        this.height = RelativeLayout.LayoutParams.WRAP_CONTENT
+        this.height = ViewGroup.LayoutParams.WRAP_CONTENT
         this.animationStyle = R.style.AlbumSpinnerThemeStyle
         this.isFocusable = true
         this.isOutsideTouchable = true
-        this.update()
         initView()
     }
 
     fun initView() {
         mRecyclerView.setLayoutManager(LinearLayoutManager(context))
         mRecyclerView.setAdapter(adapter)
-        rootViewBg.setOnClickListener { dismiss() }
+        window.setOnClickListener { dismiss() }
+        mRecyclerView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+            private var isDownInBlank = false
+
+            override fun onInterceptTouchEvent(recyclerView: RecyclerView, event: MotionEvent): Boolean {
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        isDownInBlank = recyclerView.findChildViewUnder(event.x, event.y) == null
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if (isDownInBlank) {
+                            isDownInBlank = false
+                            dismiss()
+                            return true
+                        }
+                    }
+                }
+                return super.onInterceptTouchEvent(recyclerView, event)
+            }
+        })
     }
 
     fun bindFolder(albums: List<Album>) {
         adapter.bindAlbums(albums)
-        val lp = mRecyclerView.layoutParams
-        lp.height = if (albums.size > FOLDER_MAX_COUNT) albumSpinnerStyle.maxHeight else ViewGroup.LayoutParams.WRAP_CONTENT
     }
 
     val isEmpty: Boolean
@@ -68,6 +79,7 @@ class AlbumSpinner @SuppressLint("InflateParams") constructor(private val contex
     fun setArrowImageView(ivArrowView: ImageView) {
         this.ivArrowView = ivArrowView
         this.ivArrowView?.setImageDrawable(albumSpinnerStyle.drawableDown)
+        this.ivArrowView?.rotation = 0f
         this.ivArrowView?.setOnClickListener { albumSpinnerOnClick() }
     }
 
@@ -77,22 +89,17 @@ class AlbumSpinner @SuppressLint("InflateParams") constructor(private val contex
     }
 
     override fun showAsDropDown(anchor: View) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
-            val location = IntArray(2)
-            anchor.getLocationInWindow(location)
-            showAtLocation(anchor, Gravity.NO_GRAVITY, 0, location[1] + anchor.height)
-        } else {
-            super.showAsDropDown(anchor)
-        }
-        isDismiss = false
+        val screenLocation = IntArray(2)
+        anchor.getLocationInWindow(screenLocation)
+        val availableHeight = anchor.rootView.height - screenLocation[1] - anchor.height
+        this.height = if (availableHeight > 0) availableHeight else RelativeLayout.LayoutParams.MATCH_PARENT
+        super.showAsDropDown(anchor)
         ivArrowView?.let { ivArrowView ->
-            ivArrowView.setImageDrawable(albumSpinnerStyle.drawableUp)
-            AnimUtils.rotateArrow(ivArrowView, true)
+            ivArrowView.animate()
+                .rotation(180f)
+                .setDuration(200L)
+                .start()
         }
-        rootViewBg.animate()
-            .alpha(1f)
-            .setDuration(250)
-            .setStartDelay(250).start()
     }
 
     fun setOnAlbumItemClickListener(listener: OnAlbumItemClickListener?) {
@@ -100,20 +107,13 @@ class AlbumSpinner @SuppressLint("InflateParams") constructor(private val contex
     }
 
     override fun dismiss() {
-        if (isDismiss) {
-            return
-        }
-        rootViewBg.animate()
-            .alpha(0f)
-            .setDuration(50)
-            .start()
         ivArrowView?.let { ivArrowView ->
-            ivArrowView.setImageDrawable(albumSpinnerStyle.drawableDown)
-            AnimUtils.rotateArrow(ivArrowView, false)
+            ivArrowView.animate()
+                .rotation(0f)
+                .setDuration(200L)
+                .start()
         }
-        isDismiss = true
         super@AlbumSpinner.dismiss()
-        isDismiss = false
     }
 
     /**
@@ -166,9 +166,5 @@ class AlbumSpinner @SuppressLint("InflateParams") constructor(private val contex
                 this.showAsDropDown(it)
             }
         }
-    }
-
-    companion object {
-        private const val FOLDER_MAX_COUNT = 8
     }
 }

@@ -252,6 +252,9 @@ class PreviewFragment : BaseFragment() {
         mViewHolder.pbLoading.indeterminateTintList = colorStateList
 
         mViewHolder.checkView.setCountable(mAlbumSpec.countable)
+        if (mAlbumSpec.singleSelectionModeEnabled()) {
+            mViewHolder.checkView.visibility = View.GONE
+        }
         // 初始化状态栏
         if (requireActivity() is MainActivity) {
             initStatusBar(requireActivity(), mViewHolder.constraintLayout)
@@ -406,6 +409,10 @@ class PreviewFragment : BaseFragment() {
                 mMediaController.setMediaPlayer(videoView)
                 videoView.setMediaController(mMediaController)
             }
+
+            override fun onImageClick() {
+                togglePreviewBars()
+            }
         })
 
         // 多图时滑动事件
@@ -435,6 +442,18 @@ class PreviewFragment : BaseFragment() {
         // 确认
         mViewHolder.buttonApply.setOnClickListener(object : OnMoreClickListener() {
             override fun onListener(v: View) {
+                if (mAlbumSpec.singleSelectionModeEnabled()) {
+                    val position = if (mIsDisplayCamera) {
+                        mViewPager2.currentItem + 1
+                    } else {
+                        mViewPager2.currentItem
+                    }
+                    val media = mLocalMedias.getOrNull(mViewPager2.currentItem)
+                    if (media != null) {
+                        mSelectedModel.getSelectedData().clearAll()
+                        mSelectedModel.addSelectedData(media, position)
+                    }
+                }
                 // 确认的一刻赋值
                 val localMediaArrayList: ArrayList<LocalMedia> = mSelectedModel.getSelectedData().getSelectedMediaArrayList()
                 // 设置是否原图状态
@@ -458,6 +477,20 @@ class PreviewFragment : BaseFragment() {
             mCompressFileJob?.cancel()
             // 恢复界面可用
             setControlTouchEnable(true)
+        }
+    }
+
+    /**
+     * 单击预览图切换顶栏和底栏
+     */
+    private fun togglePreviewBars() {
+        val isBarsVisible = mViewHolder.constraintLayout.visibility == View.VISIBLE
+        if (isBarsVisible) {
+            mViewHolder.constraintLayout.visibility = View.GONE
+            mViewHolder.bottomToolbar.visibility = View.GONE
+        } else {
+            mViewHolder.constraintLayout.visibility = View.VISIBLE
+            mViewHolder.bottomToolbar.visibility = View.VISIBLE
         }
     }
 
@@ -597,9 +630,6 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.pbLoading.visibility = View.GONE
             mViewHolder.buttonApply.visibility = View.VISIBLE
             setCheckViewEnable(true)
-            mViewHolder.checkView.setOnClickListener {
-                setCheckViewClickable()
-            }
             mViewHolder.tvEdit.isEnabled = true
             mViewHolder.originalLayout.isEnabled = true
         }
@@ -654,15 +684,9 @@ class PreviewFragment : BaseFragment() {
      */
     private fun updateApplyButton() {
         // 获取已选的图片
-        if (mSelectedModel.getSelectedData().count() == 0) {
-            // 禁用
-            mViewHolder.buttonApply.setText(R.string.z_multi_library_button_sure_default)
-            mViewHolder.buttonApply.isEnabled = false
-        } else if (mSelectedModel.getSelectedData()
-                .count() == 1 && mAlbumSpec.singleSelectionModeEnabled()
-        ) {
-            // 如果只选择一张或者配置只能选一张，或者不显示数字的时候。启用，不显示数字
-            mViewHolder.buttonApply.setText(R.string.z_multi_library_button_sure_default)
+        if (mAlbumSpec.singleSelectionModeEnabled()) {
+            // 单选在预览页确定时才产生选中数据，因此确定按钮始终可用
+            mViewHolder.buttonApply.setText(R.string.z_multi_library_single_preview_next)
             mViewHolder.buttonApply.isEnabled = true
         } else {
             // 启用，显示数字
@@ -678,7 +702,8 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.checkView.visibility = View.GONE
             mViewHolder.buttonApply.visibility = View.GONE
         } else {
-            mViewHolder.checkView.visibility = View.VISIBLE
+            mViewHolder.checkView.visibility =
+                if (mAlbumSpec.singleSelectionModeEnabled()) View.GONE else View.VISIBLE
             mViewHolder.buttonApply.visibility = View.VISIBLE
         }
         setCheckViewEnable(mSelectedEnable)
@@ -991,6 +1016,12 @@ class PreviewFragment : BaseFragment() {
      */
     @SuppressLint("SetTextI18n")
     private fun updateUi(item: LocalMedia) {
+        if (mAlbumSpec.singleSelectionModeEnabled()) {
+            mViewHolder.groupOriginal.visibility = View.GONE
+            mViewHolder.tvEdit.visibility = View.GONE
+            mViewHolder.tvSize.visibility = View.GONE
+            return
+        }
         // 判断是否开启原图,并且是从相册界面进来才开启原图，同时原图不支持video
         if (mAlbumSpec.originalEnable && !item.isVideo() && mOriginalEnable) {
             // 显示
