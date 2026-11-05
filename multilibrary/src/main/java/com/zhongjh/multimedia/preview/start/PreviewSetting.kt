@@ -60,6 +60,11 @@ class PreviewSetting(previewType: PreviewType) : PreviewApi {
          * 预览类型，表达从什么界面打开进来的
          */
         const val PREVIEW_TYPE = "preview_type"
+
+        /**
+         * 当前预览数据源是否是已选中列表
+         */
+        const val SELECTED_MEDIA_PREVIEW = "selected_media_preview"
     }
 
     /**

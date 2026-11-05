@@ -1,0 +1,5 @@
+<resources>
+    <style name="ShapeableImageView.NoStroke" parent="Widget.MaterialComponents.ShapeableImageView">
+        <item name="strokeColor">@android:color/transparent</item>
+    </style>
+</resources>

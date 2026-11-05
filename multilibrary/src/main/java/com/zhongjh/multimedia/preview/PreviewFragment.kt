@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +33,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -55,6 +59,7 @@ import com.zhongjh.multimedia.album.utils.AlbumCompressFileTask
 import com.zhongjh.multimedia.album.utils.PhotoMetadataUtils
 import com.zhongjh.multimedia.album.widget.CheckRadioView
 import com.zhongjh.multimedia.album.widget.CheckView
+import com.zhongjh.multimedia.album.ui.manager.SelectedMediaBarAdapter
 import com.zhongjh.multimedia.model.MainModel
 import com.zhongjh.multimedia.model.OriginalManage
 import com.zhongjh.multimedia.model.SelectedData.Companion.STATE_SELECTION
@@ -76,6 +81,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.ref.WeakReference
+import java.util.Locale
 
 
 /**
@@ -212,9 +218,34 @@ class PreviewFragment : BaseFragment() {
     private var mPreviewType = PreviewType.ALBUM_ACTIVITY
 
     /**
+     * 当前预览数据源是否是已选中列表
+     */
+    private var mIsSelectedDataSource = false
+
+    /**
      * 是否首次共享动画，只有第一次打开的时候才触发共享动画
      */
     private var mFirstSharedAnimation = true
+
+    /**
+     * 预览界面底部已选择媒体列表
+     */
+    private lateinit var mPreviewSelectedBarAdapter: SelectedMediaBarAdapter
+
+    /**
+     * 预览界面底部已选择媒体的占位图
+     */
+    private fun getPlaceholderDrawable(): Drawable {
+        val typedArray = requireActivity().theme.obtainStyledAttributes(
+            intArrayOf(R.attr.album_thumbnail_placeholder)
+        )
+        return try {
+            typedArray.getDrawable(0)
+                ?: ContextCompat.getDrawable(requireContext(), R.drawable.album_spinner_thumbnail_bg)!!
+        } finally {
+            typedArray.recycle()
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -268,6 +299,7 @@ class PreviewFragment : BaseFragment() {
         initListener()
         initObserveData()
         updateApplyButton()
+        updatePreviewSelectedMedia()
     }
 
     override fun onBackPressed(): Boolean {
@@ -326,6 +358,7 @@ class PreviewFragment : BaseFragment() {
                 mIsSelectedCheck = it.getBoolean(PreviewSetting.IS_SELECTED_CHECK, true)
                 // 预览类型，表达从什么界面打开进来的
                 mPreviewType = it.getSerializable(PreviewSetting.PREVIEW_TYPE) as PreviewType
+                mIsSelectedDataSource = it.getBoolean(PreviewSetting.SELECTED_MEDIA_PREVIEW, false)
                 // 设置是否开启编辑功能
                 mEditEnable = it.getBoolean(PreviewSetting.EDIT_ENABLE, true)
                 // 设置是否开启原图
@@ -360,6 +393,7 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.sharedAnimationView.setBackgroundAlpha(1.0F)
         }
         mViewHolder.sharedAnimationView.setBackgroundColor(Color.BLACK)
+        initPreviewSelectedMedia()
         mViewHolder.sharedAnimationView.setOnSharedAnimationViewListener(object :
             OnSharedAnimationViewListener {
             override fun onBeginBackMinAnim() {
@@ -387,6 +421,63 @@ class PreviewFragment : BaseFragment() {
                 this@PreviewFragment.onSharedViewFinish()
             }
         })
+    }
+
+    /**
+     * 初始化预览界面底部已选择媒体列表
+     */
+    private fun initPreviewSelectedMedia() {
+        mViewHolder.rvSelectedMedia.layoutManager = LinearLayoutManager(
+            requireContext(), LinearLayoutManager.HORIZONTAL, false
+        )
+        mPreviewSelectedBarAdapter = SelectedMediaBarAdapter(
+            getPlaceholderDrawable(),
+            ::onPreviewSelectedMediaClick,
+            ::removeCurrentMediaFromList,
+            { media -> !mSelectedModel.getSelectedData().isSelected(media) },
+            { false }
+        )
+        mViewHolder.rvSelectedMedia.adapter = mPreviewSelectedBarAdapter
+        mViewHolder.rvSelectedMedia.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                if (parent.getChildAdapterPosition(view) > 0) {
+                    outRect.left = requireContext().resources.getDimensionPixelSize(
+                        R.dimen.z_selected_media_bar_spacing
+                    )
+                }
+            }
+        })
+    }
+
+    /**
+     * 跳转到底部列表中对应的预览页
+     */
+    private fun onPreviewSelectedMediaClick(position: Int) {
+        val media = mPreviewSelectedBarAdapter.currentList.getOrNull(position) ?: return
+        val viewPagerPosition = mLocalMedias.indexOfFirst { it.fileId == media.fileId }
+        if (viewPagerPosition >= 0) {
+            mViewPager2.setCurrentItem(viewPagerPosition, false)
+        }
+    }
+
+    /**
+     * 在已选数据预览中，只移除当前媒体；底部列表保持展示并加蒙层
+     */
+    private fun removeCurrentMediaFromList(item: LocalMedia) {
+        val position = mLocalMedias.indexOfFirst { it.fileId == item.fileId }
+        if (position >= 0) {
+            mSelectedModel.removeSelectedData(item, position)
+        }
+        val currentItem = mLocalMedias.getOrNull(mViewPager2.currentItem)
+        if (currentItem?.fileId == item.fileId) {
+            mViewHolder.checkView.setChecked(false)
+        }
+        updatePreviewSelectedMedia()
     }
 
     /**
@@ -677,6 +768,7 @@ class PreviewFragment : BaseFragment() {
             }
         }
         updateApplyButton()
+        updatePreviewSelectedMedia()
         mAlbumSpec.onSelectedListener?.let {
             if (mPreviewType == PreviewType.ALBUM_ACTIVITY || mPreviewType == PreviewType.ALBUM_FRAGMENT) {
                 // 触发选择的接口事件
@@ -698,7 +790,7 @@ class PreviewFragment : BaseFragment() {
             // 启用，显示数字
             mViewHolder.buttonApply.isEnabled = true
             mViewHolder.buttonApply.text = getString(
-                R.string.z_multi_library_button_sure,
+                R.string.z_multi_library_button_next,
                 mSelectedModel.getSelectedData().count()
             )
         }
@@ -713,6 +805,39 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.buttonApply.visibility = View.VISIBLE
         }
         setCheckViewEnable(mSelectedEnable)
+    }
+
+    /**
+     * 更新底部已选择媒体列表和顶部进度
+     */
+    private fun updatePreviewSelectedMedia() {
+        val selectedCount = mSelectedModel.getSelectedData().count()
+        val isFromSelectedMedia = mIsSelectedDataSource
+        mViewHolder.tvTitleCount.isVisible = !mAlbumSpec.singleSelectionModeEnabled() && mIsSelectedDataSource
+        mViewHolder.tvTitleCount.text = String.format(
+            Locale.getDefault(), "%d/%d", mViewPager2.currentItem + 1, mLocalMedias.size
+        )
+        mViewHolder.rvSelectedMedia.isVisible =
+            !mAlbumSpec.singleSelectionModeEnabled() &&
+                (selectedCount > 0 || (mIsSelectedDataSource && mLocalMedias.isNotEmpty()))
+        if (isFromSelectedMedia) {
+            mPreviewSelectedBarAdapter.submitList(mLocalMedias.toList())
+        } else {
+            mPreviewSelectedBarAdapter.submitList(
+                mSelectedModel.getSelectedData().getSelectedMediaArrayList()
+            )
+        }
+        mPreviewSelectedBarAdapter.currentPreviewFileId =
+            mLocalMedias.getOrNull(mViewPager2.currentItem)?.fileId ?: Long.MIN_VALUE
+        mPreviewSelectedBarAdapter.deselectedMediaIds =
+            if (mIsSelectedDataSource) {
+                mLocalMedias
+                    .filter { !mSelectedModel.getSelectedData().isSelected(it) }
+                    .map { it.fileId }
+                    .toSet()
+            } else {
+                emptySet()
+            }
     }
 
     /**
@@ -1022,26 +1147,8 @@ class PreviewFragment : BaseFragment() {
      */
     @SuppressLint("SetTextI18n")
     private fun updateUi(item: LocalMedia) {
-        if (mAlbumSpec.singleSelectionModeEnabled()) {
-            mViewHolder.groupOriginal.visibility = View.GONE
-            mViewHolder.tvEdit.visibility = View.GONE
-            mViewHolder.tvSize.visibility = View.GONE
-            return
-        }
-        // 判断是否开启原图,并且是从相册界面进来才开启原图，同时原图不支持video
-        if (mAlbumSpec.originalEnable && !item.isVideo() && mOriginalEnable) {
-            // 显示
-            mViewHolder.groupOriginal.visibility = View.VISIBLE
-            updateOriginalState()
-        } else {
-            // 隐藏
-            mViewHolder.groupOriginal.visibility = View.GONE
-        }
-        if (item.isImage() && mGlobalSpec.imageEditEnabled && mEditEnable) {
-            mViewHolder.tvEdit.visibility = View.VISIBLE
-        } else {
-            mViewHolder.tvEdit.visibility = View.GONE
-        }
+        mViewHolder.groupOriginal.visibility = View.GONE
+        mViewHolder.tvEdit.visibility = View.GONE
         if (item.isGif()) {
             mViewHolder.tvSize.visibility = View.VISIBLE
             mViewHolder.tvSize.text = "(${PhotoMetadataUtils.getSizeInMb(item.size)}M)"
@@ -1138,6 +1245,7 @@ class PreviewFragment : BaseFragment() {
                 }
                 updateUi(item)
             }
+            updatePreviewSelectedMedia()
             onViewPageSelected(position)
         }
     }
@@ -1156,6 +1264,8 @@ class PreviewFragment : BaseFragment() {
         var bottomToolbar: ConstraintLayout = rootView.findViewById(R.id.bottomToolbar)
         var constraintLayout: ConstraintLayout = rootView.findViewById(R.id.constraintLayout)
         var checkView: CheckView = rootView.findViewById(R.id.checkView)
+        var tvTitleCount: TextView = rootView.findViewById(R.id.tvTitleCount)
+        var rvSelectedMedia: RecyclerView = rootView.findViewById(R.id.rvPreviewSelectedMedia)
         var pbLoading: ProgressBar = rootView.findViewById(R.id.pbLoading)
     }
 

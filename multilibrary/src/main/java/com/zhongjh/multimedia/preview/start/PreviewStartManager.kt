@@ -61,6 +61,7 @@ object PreviewStartManager {
             .isDisplayCamera(isDisplayCamera)
             .setBundle(bundle)
         bundle.putParcelableArrayList(PreviewSetting.PREVIEW_DATA, localMedias)
+        bundle.putBoolean(PreviewSetting.SELECTED_MEDIA_PREVIEW, localMedias != null)
         bundle.putInt(PreviewSetting.CURRENT_POSITION, position)
         fragment.arguments = bundle
         mainActivity.supportFragmentManager

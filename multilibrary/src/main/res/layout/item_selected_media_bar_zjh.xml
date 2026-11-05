@@ -7,6 +7,7 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivSelectedMedia"
+        style="@style/ShapeableImageView.NoStroke"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="bottom|start"
@@ -45,5 +46,21 @@
             tools:text="08:12" />
 
     </FrameLayout>
+
+    <View
+        android:id="@+id/viewDeselectedMask"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|start"
+        android:background="@drawable/bg_selected_media_mask"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/viewCurrentPreviewBorder"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|start"
+        android:background="@drawable/bg_preview_selected_media_border"
+        android:visibility="gone" />
 
 </FrameLayout>
