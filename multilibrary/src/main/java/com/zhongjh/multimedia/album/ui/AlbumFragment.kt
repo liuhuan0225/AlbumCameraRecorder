@@ -67,7 +67,6 @@ import com.zhongjh.multimedia.model.MainModel
 import com.zhongjh.multimedia.model.OriginalManage
 import com.zhongjh.multimedia.model.SelectedData.Companion.STATE_SELECTION
 import com.zhongjh.multimedia.model.SelectedModel
-import com.zhongjh.multimedia.preview.start.PreviewStartManager.startPreviewActivityByAlbum
 import com.zhongjh.multimedia.preview.start.PreviewStartManager.startPreviewFragmentByAlbum
 import com.zhongjh.multimedia.service.ForegroundService
 import com.zhongjh.multimedia.settings.AlbumSpec
@@ -105,11 +104,6 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      * View Binding
      */
     private lateinit var mBinding: FragmentAlbumZjhBinding
-
-    /**
-     * 从预览界面回来
-     */
-    private lateinit var mPreviewActivityResult: ActivityResultLauncher<Intent>
 
     /**
      * 拍照请求权限回调
@@ -371,7 +365,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 预览事件
         mBinding.buttonPreview.setOnClickListener(object : OnMoreClickListener() {
             override fun onListener(v: View) {
-                startPreviewActivityByAlbum(requireActivity(), isDisplayCamera(), mGlobalSpec.cutscenesEnabled, mPreviewActivityResult, mSelectedModel.getSelectedData().getSelectedMediaArrayList(), 0)
+                previewSelectedMedia(0)
             }
         })
 
@@ -455,10 +449,9 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
                 updateAlbumTitle(albums)
             }
         }
-        // 一次性初始化逻辑：手动切换专辑才重载媒体、清空选中 ==========
+        // 一次性初始化逻辑：手动切换专辑重载媒体，跨相册保留选中 ==========
         LifecycleFlowCollector.collect(this, mMainModel.albumChangeEvent) { targetAlbum ->
             LogUtil.d("AlbumFragmentFlow", "mMainModel.albumChangeEvent")
-            mSelectedModel.clearAllData()
             mMainModel.reloadPageMediaData(targetAlbum.id, mAlbumSpec.pageSize)
             mBinding.tvAlbumTitle.text = targetAlbum.name
         }
@@ -479,17 +472,6 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      * 初始化Activity的返回
      */
     private fun initActivityResult() {
-        // 将PreviewActivity传递的数据继续传给上一个Activity
-        mPreviewActivityResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode != Activity.RESULT_OK) {
-                return@registerForActivityResult
-            }
-            result.data?.let {
-                requireActivity().setResult(Activity.RESULT_OK, result.data)
-            }
-            requireActivity().finish()
-        }
-
         // 拍照权限回调
         mPicturePermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissionGranted ->
             // 回调结果：true=授权成功，false=授权拒绝 录像权限通过就行,录音只影响后续是否能录上音
@@ -817,8 +799,6 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             mBinding.recyclerview.visibility = View.GONE
             mBinding.emptyView.visibility = View.VISIBLE
         } else {
-            // 清空当前相册所有选择的数据
-            mSelectedModel.clearAllData()
             // 如果有数据，显示相应相关照片
             mBinding.recyclerview.visibility = View.VISIBLE
             mBinding.emptyView.visibility = View.GONE
