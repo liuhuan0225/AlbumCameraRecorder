@@ -74,8 +74,8 @@ class MediaViewUtil(
         mAdapter?.setHasStableIds(true)
         recyclerView.setHasFixedSize(true)
 
-        // 加载线,如果有配置则加载
-        recyclerView.addItemDecoration(MediaGridInset(spanCount, spacing, false))
+        // 加载网格间距
+        recyclerView.addItemDecoration(MediaGridInset(spacing))
 
         // recyclerView加载数据
         recyclerView.adapter = mAdapter
@@ -193,6 +193,9 @@ class MediaViewUtil(
      * 设置长按滑动选择功能
      */
     private fun setupLongPressSlideSelection() {
+        // 暂时禁用长按滑动选择
+        return
+
         var isSelecting = false
         var lastSelectedPosition = -1
 
@@ -304,7 +307,7 @@ class MediaViewUtil(
                 val defaultSpacing = context.resources.getDimensionPixelSize(R.dimen.z_media_grid_spacing)
                 MediaGridInset.calculateSpacing(defaultSpacing, spanCount)
             }
-            val availableWidth = screenWidth - spacing * (spanCount - 1)
+            val availableWidth = screenWidth - spacing * spanCount
             // 图片调整后的大小：获取列表的每个格子的宽度
             imageResize = availableWidth / spanCount
             // 图片调整后的大小 * 缩放比例

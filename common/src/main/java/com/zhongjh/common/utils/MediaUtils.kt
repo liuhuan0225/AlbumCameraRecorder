@@ -1,5 +1,6 @@
 package com.zhongjh.common.utils
 
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
@@ -10,7 +11,9 @@ import com.zhongjh.common.entity.LocalMedia
 import com.zhongjh.common.entity.MediaExtraInfo
 import com.zhongjh.common.enums.MediaType
 import com.zhongjh.common.enums.MimeType
+import java.io.File
 import java.io.InputStream
+import java.util.Locale
 
 /**
  * 多媒体的工具类，获取宽高、视频音频长度等
@@ -19,6 +22,8 @@ import java.io.InputStream
  * @date 2022/2/8
  */
 object MediaUtils {
+
+    private const val TAG = "MediaUtils"
 
     /**
      * 90度
@@ -115,17 +120,17 @@ object MediaUtils {
      */
     fun getMediaInfo(context: Context, @MediaType mediaType: Int, uri: Uri): LocalMedia {
         val localMedia = LocalMedia()
-        // 如果是图片
-        val inputStream: InputStream?
 
         when (mediaType) {
             MediaType.TYPE_PICTURE -> {
                 // 实例化ExifInterface,作用获取图片的属性
                 var exif: ExifInterface? = null
-                LogUtil.d("readContent", "inputStream = context.contentResolver.openInputStream(uri)")
-                inputStream = context.contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    exif = ExifInterface(inputStream)
+                runCatching {
+                    openMediaStream(context, uri)?.use { stream ->
+                        exif = ExifInterface(stream)
+                    }
+                }.onFailure {
+                    LogUtil.e(TAG, "读取图片属性失败: $uri", it)
                 }
                 // 开始获取图片的相关属性
                 exif?.apply {
@@ -153,55 +158,52 @@ object MediaUtils {
                         localMedia.height = height
                     }
                 }
-                inputStream?.apply {
-                    FileUtils.close(this)
-                }
             }
 
             MediaType.TYPE_VIDEO -> {
                 // 实例化MediaMetadataRetriever,作用获取视频的属性
-                LogUtil.d("readContent", "val retriever = MediaMetadataRetriever()")
                 val retriever = MediaMetadataRetriever()
-                    context.contentResolver.openInputStream(uri)?.use {
-                        // 仅检查流是否可打开，无需读取内容，use会自动关闭流
-                    } ?: return localMedia
-                LogUtil.d("readContent", "retriever.setDataSource(context, uri)")
-                retriever.setDataSource(context, uri)
-                // 获取视频的时长、角度
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    ?.toLong()?.let { duration ->
-                        localMedia.duration = duration
-                    }
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-                    ?.toInt()?.let { orientation ->
-                        localMedia.orientation = orientation
-                    }
+                try {
+                    setMediaDataSource(context, retriever, uri)
+                    // 获取视频的时长、角度
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                        ?.toLong()?.let { duration ->
+                            localMedia.duration = duration
+                        }
+                    retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+                        ?.toInt()?.let { orientation ->
+                            localMedia.orientation = orientation
+                        }
 
-                // 判断如果是非正常角度的，视频属性取相反的宽高
-                if (localMedia.orientation == 90 || localMedia.orientation == 270) {
-                    retriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
-                    )?.toInt()?.let { width ->
-                        localMedia.height = width
+                    // 判断如果是非正常角度的，视频属性取相反的宽高
+                    if (localMedia.orientation == 90 || localMedia.orientation == 270) {
+                        retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
+                        )?.toInt()?.let { width ->
+                            localMedia.height = width
+                        }
+                        retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
+                        )?.toInt()?.let { height ->
+                            localMedia.width = height
+                        }
+                    } else {
+                        retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
+                        )?.toInt()?.let { width ->
+                            localMedia.width = width
+                        }
+                        retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
+                        )?.toInt()?.let { height ->
+                            localMedia.height = height
+                        }
                     }
-                    retriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
-                    )?.toInt()?.let { height ->
-                        localMedia.width = height
-                    }
-                } else {
-                    retriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
-                    )?.toInt()?.let { width ->
-                        localMedia.width = width
-                    }
-                    retriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
-                    )?.toInt()?.let { height ->
-                        localMedia.height = height
-                    }
+                } catch (e: Exception) {
+                    LogUtil.e(TAG, "读取视频属性失败: $uri", e)
+                } finally {
+                    retriever.release()
                 }
-                retriever.release()
             }
 
             MediaType.TYPE_AUDIO -> {
@@ -210,5 +212,26 @@ object MediaUtils {
         return localMedia
     }
 
+    /**
+     * 兼容 content://、file:// 和 Android 9 及以下 MediaStore 返回的纯路径
+     */
+    private fun openMediaStream(context: Context, uri: Uri): InputStream? {
+        return when (uri.scheme?.lowercase(Locale.ROOT)) {
+            null, "" -> File(uri.toString()).inputStream()
+            ContentResolver.SCHEME_FILE -> uri.path?.let { File(it).inputStream() }
+            else -> context.contentResolver.openInputStream(uri)
+        }
+    }
 
+    private fun setMediaDataSource(context: Context, retriever: MediaMetadataRetriever, uri: Uri) {
+        when {
+            ContentResolver.SCHEME_CONTENT.equals(uri.scheme, ignoreCase = true) ->
+                retriever.setDataSource(context, uri)
+
+            ContentResolver.SCHEME_FILE.equals(uri.scheme, ignoreCase = true) ->
+                retriever.setDataSource(requireNotNull(uri.path) { "file uri path is null: $uri" })
+
+            else -> retriever.setDataSource(uri.toString())
+        }
+    }
 }

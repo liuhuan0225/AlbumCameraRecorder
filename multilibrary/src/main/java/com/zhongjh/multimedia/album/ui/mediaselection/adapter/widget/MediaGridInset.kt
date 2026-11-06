@@ -4,13 +4,12 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 /**
- * 线
+ * 网格间距
  * @author zhongjh
  */
-class MediaGridInset(private val mSpanCount: Int, private val mSpacing: Int, private val mIncludeEdge: Boolean) : RecyclerView.ItemDecoration() {
+class MediaGridInset(private val mSpacing: Int) : RecyclerView.ItemDecoration() {
 
     companion object {
 
@@ -23,32 +22,10 @@ class MediaGridInset(private val mSpanCount: Int, private val mSpacing: Int, pri
     }
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-        // item position
-        val position = parent.getChildAdapterPosition(view)
-        // item column
-        val column = position % mSpanCount
-        val spacing = calculateSpacing(mSpacing, mSpanCount)
-        if (mIncludeEdge) {
-            // spacing - column * ((1f / spanCount) * spacing)
-            outRect.left = spacing - (spacing.toFloat() * column / mSpanCount).roundToInt()
-            // (column + 1) * ((1f / spanCount) * spacing)
-            outRect.right = (spacing.toFloat() * (column + 1) / mSpanCount).roundToInt()
-
-            // top edge
-            if (position < mSpanCount) {
-                outRect.top = spacing
-            }
-            // item bottom
-            outRect.bottom = spacing
-        } else {
-            // 将间距均匀分配到左右两侧，保证相邻两项之间的实际间距始终一致
-            outRect.left = (spacing.toFloat() * column / mSpanCount).roundToInt()
-            outRect.right = (spacing.toFloat() * (mSpanCount - column - 1) / mSpanCount).roundToInt()
-            if (position >= mSpanCount) {
-                // item top
-                outRect.top = spacing
-            }
-        }
+        // 四边平均分配间距，相邻 item 的间距相加后横纵均为 mSpacing
+        val start = mSpacing / 2
+        val end = mSpacing - start
+        outRect.set(start, start, end, end)
     }
 
 }

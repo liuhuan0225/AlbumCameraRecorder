@@ -200,6 +200,11 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
     private var mIsDefaultAlbumInitialized = false
 
     /**
+     * 上一次处理过的相册列表，用于避免生命周期恢复时重复回调相同数据导致媒体列表刷新并滚动到顶部
+     */
+    private var mLastHandledAlbums: List<Album>? = null
+
+    /**
      * 空相册时自动补请求权限，避免在一次性流程中反复弹窗
      */
     private var mIsAlbumPermissionRequested = false
@@ -441,10 +446,12 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
                     mMainModel.currentSelection = 0
                     onAlbumSelected(albums[0])
                     updateAlbumTitle(albums)
-                } else {
-                    // 权限变化或媒体库变化后重新加载当前专辑
+                } else if (albums != mLastHandledAlbums) {
+                    // 仅在权限变化或媒体库真正变化后重新加载当前专辑，
+                    // 从裁剪页等页面返回时生命周期恢复会重复回调相同数据，此时刷新会导致列表回到顶部
                     mMainModel.reloadPageMediaData(mAlbum.id, mAlbumSpec.pageSize)
                 }
+                mLastHandledAlbums = albums
             } else if (mIsDefaultAlbumInitialized && !mIsAlbumPermissionRequested &&
                 mAlbumModel.isLimitedAccessPermission() == PermissionState.LimitedAccess
             ) {
@@ -582,6 +589,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
                 mCropLauncherData?.let { item ->
                     mSelectedModel.removeSelectedData(item, item.position)
                 }
+                setControlTouchEnable(true)
                 mCropLauncherData = null
             }
         }
@@ -914,7 +922,11 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         currentPosition = adapterPosition
         mMainModel.previewPosition = adapterPosition
 
-        startPreviewFragmentByAlbum((requireActivity() as MainActivity), isDisplayCamera())
+        startPreviewFragmentByAlbum(
+            (requireActivity() as MainActivity),
+            isDisplayCamera(),
+            position = adapterPosition
+        )
     }
 
     /**

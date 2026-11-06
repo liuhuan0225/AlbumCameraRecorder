@@ -541,7 +541,9 @@ class PreviewFragment : BaseFragment() {
 
         // 多图时滑动事件
         mViewPager2.registerOnPageChangeCallback(mOnPageChangeCallback)
-        mViewPager2.setCurrentItem(getDataPosition(), false)
+        if (mLocalMedias.isNotEmpty()) {
+            mViewPager2.setCurrentItem(getDataPosition(), false)
+        }
     }
 
     /**
@@ -1092,7 +1094,11 @@ class PreviewFragment : BaseFragment() {
             return
         }
         if (isSharedAnimation()) {
-            setImageViewScaleType(holder, mLocalMedias[getDataPosition()])
+            val position = holder.bindingAdapterPosition
+                .takeIf { it != RecyclerView.NO_POSITION }
+                ?: getDataPosition()
+            val media = mLocalMedias.getOrNull(position) ?: return
+            setImageViewScaleType(holder, media)
         }
     }
 
@@ -1328,11 +1334,15 @@ class PreviewFragment : BaseFragment() {
      * 返回数据源的索引,因为由于相册界面可能会有Add,预览界面没有Add,所以两者的postion会出现不一样的情况
      */
     private fun getDataPosition(): Int {
-        return if (mIsDisplayCamera) {
+        if (mLocalMedias.isEmpty()) {
+            return 0
+        }
+        val position = if (mIsDisplayCamera) {
             mMainModel.previewPosition - 1
         } else {
             mMainModel.previewPosition
         }
+        return position.coerceIn(mLocalMedias.indices)
     }
 
     /**

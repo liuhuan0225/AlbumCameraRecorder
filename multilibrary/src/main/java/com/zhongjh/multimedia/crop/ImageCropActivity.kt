@@ -1,6 +1,7 @@
 package com.zhongjh.multimedia.crop
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -17,14 +18,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
+import com.zhongjh.common.utils.LogUtil
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.databinding.ActivityImageCropBinding
 import com.zhongjh.multimedia.locale.AlbumLocale
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.util.Locale
 import kotlin.math.ceil
 import kotlin.math.max
-import kotlin.math.min
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -39,7 +42,7 @@ class ImageCropActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityImageCropBinding
-    private var imageUri: Uri? = null
+    private var imageSource: String? = null
     private var savePath: String? = null
     private val topBarNavigationHeight by lazy {
         resources.getDimensionPixelSize(R.dimen.crop_top_bar_navigation_height)
@@ -60,7 +63,7 @@ class ImageCropActivity : AppCompatActivity() {
         setContentView(binding.root)
         setupStatusBarInsets()
 
-        imageUri = intent.getStringExtra(EXTRA_IMAGE_URI)?.let(Uri::parse)
+        imageSource = intent.getStringExtra(EXTRA_IMAGE_URI)
         savePath = intent.getStringExtra(EXTRA_IMAGE_SAVE_PATH)
         val ratioX = intent.getFloatExtra(EXTRA_RATIO_X, DEFAULT_RATIO)
         val ratioY = intent.getFloatExtra(EXTRA_RATIO_Y, DEFAULT_RATIO)
@@ -93,14 +96,16 @@ class ImageCropActivity : AppCompatActivity() {
     }
 
     private fun loadImage() {
-        val uri = imageUri
-        if (uri == null) {
+        val source = imageSource
+        if (source.isNullOrBlank()) {
             finish()
             return
         }
         lifecycleScope.launch {
             val bitmap = withContext(Dispatchers.IO) {
-                runCatching { decodeUriBitmap(uri) }.getOrNull()
+                runCatching { decodeBitmap(source) }
+                    .onFailure { LogUtil.e(TAG, "decode crop image failed: $source", it) }
+                    .getOrNull()
             }
             if (bitmap == null || isFinishing || isDestroyed) {
                 Toast.makeText(this@ImageCropActivity, R.string.z_load_media_failed, Toast.LENGTH_SHORT).show()
@@ -111,8 +116,8 @@ class ImageCropActivity : AppCompatActivity() {
         }
     }
 
-    private fun decodeUriBitmap(uri: Uri): Bitmap? {
-        val inputStream = contentResolver.openInputStream(uri) ?: return null
+    private fun decodeBitmap(source: String): Bitmap? {
+        val inputStream = openSourceStream(source) ?: return null
         val orientation = inputStream.use { stream ->
             runCatching { ExifInterface(stream).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) }
                 .map { orientationValue ->
@@ -126,7 +131,7 @@ class ImageCropActivity : AppCompatActivity() {
                     }
                 }.getOrDefault(0)
         }
-        contentResolver.openInputStream(uri)?.use { stream ->
+        openSourceStream(source)?.use { stream ->
             val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeStream(stream, null, options)
             val maxImageSize = max(options.outWidth, options.outHeight)
@@ -141,11 +146,24 @@ class ImageCropActivity : AppCompatActivity() {
                 inSampleSize = sampleSize
                 inPreferredConfig = Bitmap.Config.ARGB_8888
             }
-            contentResolver.openInputStream(uri)?.use { decodeStream ->
+            openSourceStream(source)?.use { decodeStream ->
                 val bitmap = BitmapFactory.decodeStream(decodeStream, null, decodeOptions) ?: return null
                 return rotateBitmap(bitmap, orientation)
             } ?: return null
         } ?: return null
+    }
+
+    /**
+     * Android 9 及以下 MediaStore 返回的是绝对路径，Android 10+ 返回 content://。
+     * 这里统一兼容纯路径、file:// 和 content:// 三种来源。
+     */
+    private fun openSourceStream(source: String): InputStream? {
+        val uri = Uri.parse(source)
+        return when (uri.scheme?.lowercase(Locale.ROOT)) {
+            null, "" -> File(source).inputStream()
+            ContentResolver.SCHEME_FILE -> uri.path?.let { File(it).inputStream() }
+            else -> contentResolver.openInputStream(uri)
+        }
     }
 
     private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
@@ -157,7 +175,7 @@ class ImageCropActivity : AppCompatActivity() {
     }
 
     private fun confirmCrop() {
-        val uri = imageUri ?: return
+        val source = imageSource ?: return
         val output = savePath
         val cropRect = binding.cropOverlayView.getCropRect()
         if (output.isNullOrBlank() || cropRect.isEmpty) {
@@ -168,7 +186,7 @@ class ImageCropActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val size = withContext(Dispatchers.IO) {
                 runCatching {
-                val bitmap = decodeUriBitmap(uri) ?: throw IllegalStateException("图片解码失败")
+                    val bitmap = decodeBitmap(source) ?: throw IllegalStateException("图片解码失败")
                     val croppedBitmap = cropBitmap(bitmap, cropRect)
                     writeBitmap(croppedBitmap, output)
                     croppedBitmap.width to croppedBitmap.height
