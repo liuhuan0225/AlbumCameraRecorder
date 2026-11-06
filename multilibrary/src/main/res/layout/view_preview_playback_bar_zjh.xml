@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/video_playback_bar"
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:background="@drawable/bg_preview_playback_scrim"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/video_play_pause_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="@string/z_multi_library_play_button"
+        android:src="@drawable/ic_play_arrow_white_24dp" />
+
+    <TextView
+        android:id="@+id/tv_current_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:lineHeight="16dp"
+        android:textColor="#99FFFFFF"
+        android:textSize="10sp"
+        tools:text="03:12" />
+
+    <SeekBar
+        android:id="@+id/video_seek_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:maxHeight="4dp"
+        android:minHeight="4dp"
+        android:paddingStart="0dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="0dp"
+        android:progressDrawable="@drawable/bg_video_playback_progress"
+        android:splitTrack="false"
+        android:thumb="@null"
+        tools:progress="32" />
+
+    <TextView
+        android:id="@+id/tv_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:lineHeight="16dp"
+        android:textColor="#99FFFFFF"
+        android:textSize="10sp"
+        tools:text="08:12" />
+
+</LinearLayout>

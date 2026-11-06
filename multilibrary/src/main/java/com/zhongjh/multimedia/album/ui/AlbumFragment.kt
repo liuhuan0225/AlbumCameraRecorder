@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.zhongjh.common.entity.LocalMedia
+import com.zhongjh.common.enums.MediaType.Companion.TYPE_PICTURE
 import com.zhongjh.common.enums.MimeType.Companion.ofImage
 import com.zhongjh.common.enums.MimeType.Companion.ofVideo
 import com.zhongjh.common.listener.OnMoreClickListener
@@ -61,6 +62,7 @@ import com.zhongjh.multimedia.album.ui.mediaselection.adapter.AlbumAdapter
 import com.zhongjh.multimedia.album.utils.AlbumCompressFileTask
 import com.zhongjh.multimedia.album.widget.albumspinner.AlbumSpinner
 import com.zhongjh.multimedia.album.widget.albumspinner.OnAlbumItemClickListener
+import com.zhongjh.multimedia.crop.ImageCropActivity
 import com.zhongjh.multimedia.constants.ModuleTypes
 import com.zhongjh.multimedia.databinding.FragmentAlbumZjhBinding
 import com.zhongjh.multimedia.model.MainModel
@@ -75,12 +77,15 @@ import com.zhongjh.multimedia.settings.GlobalSpec
 import com.zhongjh.multimedia.settings.GlobalSpec.getMimeTypeSet
 import com.zhongjh.multimedia.sharedanimation.RecycleItemViewParams.add
 import com.zhongjh.multimedia.utils.AttrsUtils
+import com.zhongjh.multimedia.utils.FileMediaUtil
 import com.zhongjh.multimedia.utils.LifecycleFlowCollector
 import com.zhongjh.multimedia.utils.MediaStoreUtils
 import com.zhongjh.multimedia.utils.SettingsPermissionUtils
 import com.zhongjh.multimedia.widget.ConstraintLayoutBehavior
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -129,6 +134,16 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      * 系统拍照的回调
      */
     private lateinit var mAppCameraLauncher: ActivityResultLauncher<Intent>
+
+    /**
+     * 单选图片直接进入裁剪页后的回调
+     */
+    private lateinit var mCropLauncher: ActivityResultLauncher<Intent>
+
+    /**
+     * 当前进入裁剪页的实体
+     */
+    private var mCropLauncherData: LocalMedia? = null
 
     /**
      * 公共配置
@@ -531,6 +546,28 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             }
             ForegroundService.stopService(mApplicationContext)
         }
+
+        // 单选图片裁剪成功后，立即关闭相册并返回结果
+        mCropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    mCropLauncherData?.let { croppedItem ->
+                        val saved = loadCroppedMedia(croppedItem, result.data)
+                        if (saved != null) {
+                            setResultOk(arrayListOf(saved))
+                        } else {
+                            setControlTouchEnable(true)
+                        }
+                    }
+                    mCropLauncherData = null
+                }
+            } else {
+                mCropLauncherData?.let { item ->
+                    mSelectedModel.removeSelectedData(item, item.position)
+                }
+                mCropLauncherData = null
+            }
+        }
     }
 
     /**
@@ -851,6 +888,9 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         if (isFastDoubleClick()) {
             return
         }
+        if (startImageCropIfNeeded(item)) {
+            return
+        }
         // 将当前列表的组件宽高数据添加到缓存
         add(mBinding.recyclerview, 0)
 
@@ -858,6 +898,61 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         mMainModel.previewPosition = adapterPosition
 
         startPreviewFragmentByAlbum((requireActivity() as MainActivity), isDisplayCamera())
+    }
+
+    /**
+     * 单选图片启用裁剪时，直接进入裁剪页并跳过预览页
+     */
+    private fun startImageCropIfNeeded(item: LocalMedia?): Boolean {
+        if (!mAlbumSpec.isCropEnabled ||
+            !mAlbumSpec.singleSelectionModeEnabled() ||
+            item?.isImageOrGif() != true
+        ) {
+            return false
+        }
+
+        val sourceUri = item.uri
+        if (sourceUri.isBlank()) {
+            return false
+        }
+
+        val output = FileMediaUtil.createCacheFile(mApplicationContext, TYPE_PICTURE)
+        val intent = ImageCropActivity.start(
+            requireActivity(),
+            sourceUri,
+            output.absolutePath,
+            mAlbumSpec.cropRatioX,
+            mAlbumSpec.cropRatioY,
+            mAlbumSpec.cropMaskImage
+        )
+        setControlTouchEnable(false)
+        mCropLauncherData = item
+        mCropLauncher.launch(intent)
+        return true
+    }
+
+    /**
+     * 复制裁剪文件并设置实体字段
+     */
+    private suspend fun loadCroppedMedia(item: LocalMedia, resultData: Intent?): LocalMedia? {
+        val output = resultData?.getStringExtra(ImageCropActivity.EXTRA_SAVE_OUTPUT_PATH)
+        if (output == null) {
+            return null
+        }
+        val croppedFile = File(output)
+        if (!croppedFile.exists() || croppedFile.length() == 0L) {
+            return null
+        }
+        val croppedMedia = LocalMedia(item)
+        croppedMedia.isChecked = true
+        croppedMedia.isCut = true
+        croppedMedia.editorPath = output
+        croppedMedia.compressPath = output
+        croppedMedia.width = resultData.getIntExtra(ImageCropActivity.EXTRA_WIDTH, item.width)
+        croppedMedia.height = resultData.getIntExtra(ImageCropActivity.EXTRA_HEIGHT, item.height)
+        croppedMedia.size = croppedFile.length()
+        croppedMedia.fileName = croppedFile.name
+        return croppedMedia
     }
 
     /**

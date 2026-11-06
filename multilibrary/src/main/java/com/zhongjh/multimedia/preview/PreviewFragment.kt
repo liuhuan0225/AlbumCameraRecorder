@@ -10,13 +10,17 @@ import android.content.res.TypedArray
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ImageView.ScaleType
-import android.widget.MediaController
+import android.widget.SeekBar
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -81,6 +85,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.ref.WeakReference
+import kotlin.math.ceil
 import java.util.Locale
 
 
@@ -104,11 +109,11 @@ class PreviewFragment : BaseFragment() {
 
     companion object {
         const val TAG: String = "PreviewFragment"
+        private const val PROGRESS_UPDATE_INTERVAL = 500L
     }
 
     private lateinit var mContext: Context
     private val weakFragment = WeakReference(this@PreviewFragment)
-    private lateinit var mMediaController: MediaController
     private lateinit var mViewHolder: ViewHolder
     private lateinit var mViewPager2: ViewPager2
     private lateinit var mAdapter: PreviewPagerAdapter
@@ -228,6 +233,21 @@ class PreviewFragment : BaseFragment() {
     private var mFirstSharedAnimation = true
 
     /**
+     * 共享播放进度条定时器
+     */
+    private val mProgressHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * 定时同步共享播放进度条
+     */
+    private val mProgressRunnable = object : Runnable {
+        override fun run() {
+            updatePlaybackProgress()
+            mProgressHandler.postDelayed(this, PROGRESS_UPDATE_INTERVAL)
+        }
+    }
+
+    /**
      * 预览界面底部已选择媒体列表
      */
     private lateinit var mPreviewSelectedBarAdapter: SelectedMediaBarAdapter
@@ -270,7 +290,6 @@ class PreviewFragment : BaseFragment() {
         initActivityResult()
         // 初始化bundle的Value
         initBundleValue(savedInstanceState)
-        mMediaController = MediaController(activity)
         mViewHolder = ViewHolder(view)
 
         // 安全设置颜色：有主题用主题，没有就用白色
@@ -296,6 +315,10 @@ class PreviewFragment : BaseFragment() {
         // 初始化共享动画view
         initSharedAnimationView()
         initViewPagerData()
+        initPlaybackBar()
+        mLocalMedias.getOrNull(mViewPager2.currentItem)?.let { currentMedia ->
+            updatePlaybackBar(currentMedia)
+        }
         initListener()
         initObserveData()
         updateApplyButton()
@@ -312,6 +335,7 @@ class PreviewFragment : BaseFragment() {
     }
 
     override fun onDestroy() {
+        mProgressHandler.removeCallbacks(mProgressRunnable)
         mViewPager2.unregisterOnPageChangeCallback(mOnPageChangeCallback)
         mAdapter.onDestroy()
         // 如果依附的Activity是MainActivity,就显示底部控件动画
@@ -319,6 +343,16 @@ class PreviewFragment : BaseFragment() {
             (requireActivity() as MainActivity).showHideTableLayoutAnimator(true)
         }
         super.onDestroy()
+    }
+
+    override fun onPause() {
+        if (::mAdapter.isInitialized) {
+            mAdapter.pausePlayback()
+            if (::mViewHolder.isInitialized) {
+                updatePlaybackProgress()
+            }
+        }
+        super.onPause()
     }
 
     /**
@@ -388,6 +422,7 @@ class PreviewFragment : BaseFragment() {
             val alpha = if (mIsSavedInstanceState) 1F else 0F
             mViewHolder.sharedAnimationView.setBackgroundAlpha(alpha)
             mViewHolder.bottomToolbar.alpha = alpha
+            mViewHolder.videoPlaybackBar.alpha = alpha
             mViewHolder.constraintLayout.alpha = alpha
         } else {
             mViewHolder.sharedAnimationView.setBackgroundAlpha(1.0F)
@@ -501,20 +536,49 @@ class PreviewFragment : BaseFragment() {
                 this@PreviewFragment.onViewFirstAttachedToWindow(holder)
             }
 
-            override fun onVideoPlay(videoView: VideoView) {
-                mMediaController.setAnchorView(videoView)
-                mMediaController.setMediaPlayer(videoView)
-                videoView.setMediaController(mMediaController)
-            }
-
             override fun onImageClick() {
                 togglePreviewBars()
             }
         })
+        mAdapter.setOnPlaybackStateChange {
+            updatePlaybackProgress()
+        }
+        mAdapter.setOnActivePlaybackChanged { position ->
+            mLocalMedias.getOrNull(position)?.let { media ->
+                updatePlaybackBar(media)
+            }
+        }
 
         // 多图时滑动事件
         mViewPager2.registerOnPageChangeCallback(mOnPageChangeCallback)
         mViewPager2.setCurrentItem(getDataPosition(), false)
+    }
+
+    /**
+     * 初始化共享自定义播放控制条
+     */
+    private fun initPlaybackBar() {
+        mViewHolder.videoPlayPauseButton.setOnClickListener {
+            val position = mViewPager2.currentItem
+            Log.d("PreviewPlayback", "fragment click position=$position")
+            mAdapter.togglePlayback(mViewPager2.currentItem)
+        }
+        mViewHolder.videoSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    mViewHolder.tvCurrentTime.text = formatElapsedTime(progress)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                Log.d("PreviewPlayback", "seek stopped position=${mViewPager2.currentItem} progress=${seekBar.progress} max=${seekBar.max}")
+                mAdapter.getCurrentViewHolder(mViewPager2.currentItem)
+                    ?.videoView?.seekTo(seekBar.progress)
+                updatePlaybackProgress()
+            }
+        })
     }
 
     /**
@@ -585,9 +649,106 @@ class PreviewFragment : BaseFragment() {
         if (isBarsVisible) {
             mViewHolder.constraintLayout.visibility = View.GONE
             mViewHolder.bottomToolbar.visibility = View.GONE
+            mViewHolder.videoPlaybackBar.visibility = View.GONE
         } else {
             mViewHolder.constraintLayout.visibility = View.VISIBLE
             mViewHolder.bottomToolbar.visibility = View.VISIBLE
+            mLocalMedias.getOrNull(mViewPager2.currentItem)?.let { currentMedia ->
+                updatePlaybackBar(currentMedia)
+            }
+        }
+    }
+
+    /**
+     * 更新共享播放控制条，视频和音频显示，图片隐藏
+     */
+    private fun updatePlaybackBar(item: LocalMedia) {
+        val hasPlayback = item.isVideo() || item.isAudio()
+        val holder = mAdapter.getCurrentViewHolder(mViewPager2.currentItem)
+        Log.d("PreviewPlayback", "updateBar position=${mViewPager2.currentItem} hasPlayback=$hasPlayback uri=${item.uri} itemDuration=${item.duration} holder=${holder?.hashCode()} playerDuration=${holder?.videoView?.duration} mediaDuration=${holder?.mediaDuration}")
+        mViewHolder.videoPlaybackBar.visibility = if (hasPlayback) View.VISIBLE else View.GONE
+        if (!hasPlayback) {
+            mProgressHandler.removeCallbacks(mProgressRunnable)
+            return
+        }
+        mViewHolder.videoSeekBar.max = maxOf(
+            holder?.videoView?.duration ?: 0,
+            holder?.mediaDuration ?: 0,
+            item.duration.toInt(),
+            1
+        )
+        mViewHolder.tvDuration.text = formatTotalElapsedTime(mViewHolder.videoSeekBar.max)
+        updatePlaybackProgress()
+    }
+
+    /**
+     * 同步播放按钮、时间和进度
+     */
+    private fun updatePlaybackProgress() {
+        updatePlaybackProgress(mLocalMedias.getOrNull(mViewPager2.currentItem))
+    }
+
+    /**
+     * 按指定媒体同步播放状态；未拿到播放器时使用媒体自身时长重置进度
+     */
+    private fun updatePlaybackProgress(item: LocalMedia?) {
+        if (item == null) {
+            mProgressHandler.removeCallbacks(mProgressRunnable)
+            return
+        }
+        val holder = mAdapter.getCurrentViewHolder(mViewPager2.currentItem)
+        val currentPosition = holder?.videoView?.currentPosition ?: 0
+        val duration = maxOf(
+            holder?.videoView?.duration ?: 0,
+            holder?.mediaDuration ?: 0,
+            item.duration.toInt(),
+            1
+        )
+        Log.d(
+            "PreviewPlayback",
+            "updateProgress position=${mViewPager2.currentItem} holder=${holder?.hashCode()} " +
+                "current=$currentPosition duration=$duration playerDuration=${holder?.videoView?.duration ?: 0} " +
+                "itemDuration=${item.duration} requested=${holder?.isPlaying == true} " +
+                "playing=${holder?.videoView?.isPlaying == true}"
+        )
+        mViewHolder.videoSeekBar.max = duration
+        if (holder != null && !mViewHolder.videoSeekBar.isPressed) {
+            mViewHolder.videoSeekBar.progress = currentPosition
+        }
+        mViewHolder.tvCurrentTime.text = formatElapsedTime(currentPosition)
+        mViewHolder.tvDuration.text = formatTotalElapsedTime(duration)
+        mViewHolder.videoPlayPauseButton.setImageResource(
+            if (holder?.isPlaying == true) R.drawable.ic_pause_white_24dp else R.drawable.ic_play_arrow_white_24dp
+        )
+        if (holder?.isPlaying == true) {
+            mProgressHandler.removeCallbacks(mProgressRunnable)
+            mProgressHandler.postDelayed(mProgressRunnable, PROGRESS_UPDATE_INTERVAL)
+        } else {
+            mProgressHandler.removeCallbacks(mProgressRunnable)
+        }
+    }
+
+    private fun formatElapsedTime(millisecond: Int): String {
+        val totalSeconds = millisecond / 1000
+        val hours = totalSeconds / 3600
+        val minutes = totalSeconds % 3600 / 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) {
+            String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.US, "%02d:%02d", minutes, seconds)
+        }
+    }
+
+    private fun formatTotalElapsedTime(millisecond: Int): String {
+        val totalSeconds = ceil(millisecond / 1000.0).toInt()
+        val hours = totalSeconds / 3600
+        val minutes = totalSeconds % 3600 / 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) {
+            String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.US, "%02d:%02d", minutes, seconds)
         }
     }
 
@@ -973,6 +1134,7 @@ class PreviewFragment : BaseFragment() {
                 mViewHolder.sharedAnimationView.startNormal(width, height, false)
                 mViewHolder.sharedAnimationView.setBackgroundAlpha(1F)
                 mViewHolder.bottomToolbar.alpha = 1F
+                mViewHolder.videoPlaybackBar.alpha = 1F
                 mViewHolder.constraintLayout.alpha = 1F
             } else {
                 // 将记录好的RecyclerView的位置大小，进行动画扩大到width,height
@@ -1079,9 +1241,7 @@ class PreviewFragment : BaseFragment() {
         if (currentHolder.imageView.isGone) {
             currentHolder.imageView.visibility = View.VISIBLE
         }
-        if (currentHolder.videoPlayButton.isVisible) {
-            currentHolder.videoPlayButton.visibility = View.GONE
-        }
+        mViewHolder.videoPlaybackBar.visibility = View.GONE
     }
 
     /**
@@ -1100,6 +1260,7 @@ class PreviewFragment : BaseFragment() {
     private fun onBackgroundAlpha(alpha: Float) {
         mViewHolder.sharedAnimationView.setBackgroundAlpha(alpha)
         mViewHolder.bottomToolbar.alpha = alpha
+        mViewHolder.videoPlaybackBar.alpha = alpha
         mViewHolder.constraintLayout.alpha = alpha
     }
 
@@ -1224,6 +1385,10 @@ class PreviewFragment : BaseFragment() {
     private val mOnPageChangeCallback: OnPageChangeCallback = object : OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             val adapter = mViewPager2.adapter as PreviewPagerAdapter
+            Log.d("PreviewPlayback", "page selected position=$position currentItem=${mViewPager2.currentItem}")
+            if (::mAdapter.isInitialized) {
+                mAdapter.pausePlayback()
+            }
             val item = adapter.getLocalMedia(position)
             item?.let {
                 if (mAlbumSpec.countable) {
@@ -1244,9 +1409,21 @@ class PreviewFragment : BaseFragment() {
                     }
                 }
                 updateUi(item)
+                updatePlaybackBar(item)
+                updatePlaybackProgress(item)
             }
             updatePreviewSelectedMedia()
             onViewPageSelected(position)
+        }
+
+        override fun onPageScrollStateChanged(state: Int) {
+            Log.d(
+                "PreviewPlayback",
+                "page scroll state=$state current=${mViewPager2.currentItem} childCount=${mViewPager2.childCount}"
+            )
+            if (state == ViewPager2.SCROLL_STATE_DRAGGING && ::mAdapter.isInitialized) {
+                mAdapter.pausePlayback()
+            }
         }
     }
 
@@ -1267,6 +1444,11 @@ class PreviewFragment : BaseFragment() {
         var tvTitleCount: TextView = rootView.findViewById(R.id.tvTitleCount)
         var rvSelectedMedia: RecyclerView = rootView.findViewById(R.id.rvPreviewSelectedMedia)
         var pbLoading: ProgressBar = rootView.findViewById(R.id.pbLoading)
+        var videoPlaybackBar: View = rootView.findViewById(R.id.videoPlaybackBar)
+        var videoPlayPauseButton: ImageView = rootView.findViewById(R.id.video_play_pause_button)
+        var tvCurrentTime: TextView = rootView.findViewById(R.id.tv_current_time)
+        var videoSeekBar: SeekBar = rootView.findViewById(R.id.video_seek_bar)
+        var tvDuration: TextView = rootView.findViewById(R.id.tv_duration)
     }
 
 }

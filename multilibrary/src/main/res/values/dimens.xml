@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <dimen name="z_media_grid_size">48dp</dimen>
     <dimen name="z_media_grid_spacing">1dp</dimen>
-
     <dimen name="z_selected_media_bar_size">56dp</dimen>
-
     <dimen name="z_selected_media_bar_spacing">6dp</dimen>
-
     <dimen name="z_cpb_stroke_width">4dp</dimen>
 
+    <dimen name="crop_top_bar_height">102dp</dimen>
+    <dimen name="crop_top_bar_navigation_height">48dp</dimen>
+    <dimen name="crop_bottom_bar_height">80dp</dimen>
+    <dimen name="crop_back_button_size">24dp</dimen>
+    <dimen name="crop_page_margin">16dp</dimen>
+    <dimen name="crop_button_height">40dp</dimen>
+    <dimen name="crop_button_margin_bottom">20dp</dimen>
+    <dimen name="crop_button_text_size">16sp</dimen>
 </resources>

@@ -12,18 +12,15 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.zhongjh.common.entity.LocalMedia;
-import com.zhongjh.common.enums.MediaType;
 import com.zhongjh.common.enums.MimeType;
 import com.zhongjh.demo.R;
 import com.zhongjh.demo.configuration.Glide4Engine;
 import com.zhongjh.demo.configuration.OnImageCompressionLuBan;
 import com.zhongjh.demo.databinding.ActivityMediaTestBinding;
 import com.zhongjh.common.utils.FileUtils;
-import com.zhongjh.imageedit.ImageEditActivity;
 import com.zhongjh.multimedia.settings.AlbumSetting;
 import com.zhongjh.multimedia.settings.GlobalSetting;
 import com.zhongjh.multimedia.settings.MultiMediaSetting;
-import com.zhongjh.multimedia.utils.FileMediaUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,18 +61,6 @@ public class MediaTestActivity extends AppCompatActivity {
                 handleAlbumResult(result.getResultCode(), result.getData());
             });
 
-    private final ActivityResultLauncher<Intent> cropLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() != RESULT_OK || result.getData() == null) return;
-                String path = result.getData().getStringExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH);
-                File file = path == null ? null : new File(path);
-                if (file != null && file.exists()) {
-                    binding.tvResult.setText("Crop\n" + file.getAbsolutePath());
-                } else {
-                    binding.tvResult.setText(R.string.crop_failed);
-                }
-            });
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,8 +75,13 @@ public class MediaTestActivity extends AppCompatActivity {
                 openAlbum(MimeType.ofVideo(), 1, ACTION_SELECT, "Single video"));
         binding.btnMultiVideo.setOnClickListener(v ->
                 openAlbum(MimeType.ofVideo(), MAX_MULTI_SELECT_COUNT, ACTION_SELECT, "Multi video"));
-        binding.btnCropImage.setOnClickListener(v ->
-                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop"));
+        binding.btnCropImage1x1.setOnClickListener(v ->
+                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 1:1", 1f, 1f));
+        binding.btnCropImage9x16.setOnClickListener(v ->
+                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 9:16", 12f, 16f));
+        binding.btnCropImageRoundMask.setOnClickListener(v ->
+                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop round mask", 1f, 1f,
+                        R.drawable.crop_round_mask));
         binding.btnCompressImage.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_COMPRESS, "Compress"));
     }
@@ -103,12 +93,27 @@ public class MediaTestActivity extends AppCompatActivity {
     }
 
     private void openAlbum(Set<MimeType> mimeTypes, int maxCount, int action, String title) {
+        openAlbum(mimeTypes, maxCount, action, title, 0f, 0f);
+    }
+
+    private void openAlbum(Set<MimeType> mimeTypes, int maxCount, int action, String title,
+                           float cropRatioX, float cropRatioY) {
+        openAlbum(mimeTypes, maxCount, action, title, cropRatioX, cropRatioY, 0);
+    }
+
+    private void openAlbum(Set<MimeType> mimeTypes, int maxCount, int action, String title,
+                           float cropRatioX, float cropRatioY, int cropMaskImage) {
         pendingAction = action;
         actionTitle = title;
         AlbumSetting albumSetting = new AlbumSetting(false)
                 .isDisplayCamera(false)
                 .mimeTypeSet(mimeTypes)
                 .countable(true);
+        if (action == ACTION_CROP) {
+            albumSetting.cropEnable(true)
+                    .cropRatio(cropRatioX, cropRatioY)
+                    .cropMaskImage(cropMaskImage);
+        }
         GlobalSetting globalSetting = MultiMediaSetting.from(this).choose(mimeTypes)
                 .albumSetting(albumSetting)
                 .imageEngine(new Glide4Engine());
@@ -129,9 +134,7 @@ public class MediaTestActivity extends AppCompatActivity {
         List<LocalMedia> mediaList = MultiMediaSetting.obtainLocalMediaResult(intent);
         if (mediaList.isEmpty()) return;
 
-        if (pendingAction == ACTION_CROP) {
-            startCrop(mediaList.get(0));
-        } else if (pendingAction == ACTION_COMPRESS) {
+        if (pendingAction == ACTION_COMPRESS) {
             compress(mediaList.get(0));
         } else {
             showMediaPaths(actionTitle, mediaList);
@@ -152,16 +155,6 @@ public class MediaTestActivity extends AppCompatActivity {
             path = media.getAbsolutePath();
         }
         return path;
-    }
-
-    private void startCrop(LocalMedia media) {
-        File cropFile = FileMediaUtil.INSTANCE.createCacheFile(
-                getApplicationContext(), MediaType.TYPE_PICTURE);
-        Intent intent = new Intent(this, ImageEditActivity.class);
-        intent.putExtra(ImageEditActivity.EXTRA_IMAGE_URI, getUriString(media));
-        intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH, cropFile.getAbsolutePath());
-        intent.putExtra(ImageEditActivity.EXTRA_START_CLIP, true);
-        cropLauncher.launch(intent);
     }
 
     private String getUriString(LocalMedia media) {

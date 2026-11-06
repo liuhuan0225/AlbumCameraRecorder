@@ -47,11 +47,25 @@
                 android:text="@string/multi_video" />
 
             <Button
-                android:id="@+id/btnCropImage"
+                android:id="@+id/btnCropImage1x1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/single_image_crop" />
+                android:text="@string/single_image_crop_1_1" />
+
+            <Button
+                android:id="@+id/btnCropImage9x16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/single_image_crop_9_16" />
+
+            <Button
+                android:id="@+id/btnCropImageRoundMask"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/single_image_crop_round_mask" />
 
             <Button
                 android:id="@+id/btnCompressImage"

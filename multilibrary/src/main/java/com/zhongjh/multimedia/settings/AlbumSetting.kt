@@ -156,6 +156,23 @@ class AlbumSetting(mediaTypeExclusive: Boolean) : AlbumSettingApi {
         return this
     }
 
+    override fun cropEnable(enable: Boolean): AlbumSetting {
+        mAlbumSpec.isCropEnabled = enable
+        return this
+    }
+
+    override fun cropRatio(x: Float, y: Float): AlbumSetting {
+        require(x > 0f && y > 0f) { "裁剪比例必须大于0" }
+        mAlbumSpec.cropRatioX = x
+        mAlbumSpec.cropRatioY = y
+        return this
+    }
+
+    override fun cropMaskImage(resourceId: Int): AlbumSetting {
+        mAlbumSpec.cropMaskImage = resourceId
+        return this
+    }
+
     companion object {
         private const val SCALE_ZERO = 0f
         private const val SCALE_ONE = 1f

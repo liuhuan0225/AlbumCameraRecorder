@@ -145,6 +145,13 @@
 
     </style>
 
+    <style name="AppTheme.ImageCrop" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/crop_background</item>
+        <item name="android:statusBarColor">@color/crop_background</item>
+        <item name="android:navigationBarColor">@color/crop_background</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+
     <style name="Popup.Dracula" parent="">
         <item name="album.backgroundStyle">@drawable/spinner_item_select_bg_dracula</item> <!-- 专辑选项的背景样式 -->
         <item name="album.checkDotStyle">@drawable/ic_orange_oval</item> <!-- 专辑选中时候的样式 -->

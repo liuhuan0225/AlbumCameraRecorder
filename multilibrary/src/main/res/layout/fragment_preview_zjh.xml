@@ -60,6 +60,15 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <include
+        android:id="@+id/videoPlaybackBar"
+        layout="@layout/view_preview_playback_bar_zjh"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomToolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottomToolbar"
         android:layout_width="match_parent"

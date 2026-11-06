@@ -70,6 +70,14 @@
             android:screenOrientation="locked"
             android:taskAffinity=""
             tools:ignore="DiscouragedApi" />
+        <activity
+            android:name="com.zhongjh.multimedia.crop.ImageCropActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="locked"
+            android:taskAffinity=""
+            android:theme="@style/AppTheme.ImageCrop"
+            tools:ignore="DiscouragedApi" />
 
     </application>
 

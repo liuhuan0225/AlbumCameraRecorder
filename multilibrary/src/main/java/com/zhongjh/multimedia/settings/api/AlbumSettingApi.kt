@@ -205,4 +205,28 @@ interface AlbumSettingApi {
      */
     fun slidingHiddenEnable(enable: Boolean): AlbumSetting
 
+    /**
+     * 是否对单选图片启用固定比例裁剪
+     *
+     * @param enable 是否启用该功能
+     * @return [AlbumSetting] this
+     */
+    fun cropEnable(enable: Boolean): AlbumSetting
+
+    /**
+     * 设置固定裁剪比例
+     *
+     * @param x 横向系数
+     * @param y 纵向系数
+     * @return [AlbumSetting] this
+     */
+    fun cropRatio(x: Float, y: Float): AlbumSetting
+
+    /**
+     * 设置裁剪显示区域的自定义遮罩图像，图像宽高比例必须与裁剪比例一致
+     *
+     * @param resourceId 遮罩图像资源，传 0 表示使用默认遮罩
+     * @return [AlbumSetting] this
+     */
+    fun cropMaskImage(resourceId: Int): AlbumSetting
 }

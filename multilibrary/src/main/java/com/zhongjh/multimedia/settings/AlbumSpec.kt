@@ -140,6 +140,26 @@ object AlbumSpec {
      */
     var filterMinFileSize = 1024L
 
+    /**
+     * 是否对单选图片启用固定比例裁剪
+     */
+    var isCropEnabled = false
+
+    /**
+     * 裁剪比例的横向系数
+     */
+    var cropRatioX = 1f
+
+    /**
+     * 裁剪比例的纵向系数
+     */
+    var cropRatioY = 1f
+
+    /**
+     * 裁剪显示区域的自定义遮罩图像资源，比例必须与裁剪比例一致
+     */
+    var cropMaskImage = 0
+
     // endregion end 属性
 
     val cleanInstance = AlbumSpec
@@ -177,6 +197,10 @@ object AlbumSpec {
         videoMinSecond = 0
         filterMaxFileSize = 0L
         filterMinFileSize = 0L
+        isCropEnabled = false
+        cropRatioX = 1f
+        cropRatioY = 1f
+        cropMaskImage = 0
     }
 
     /**
