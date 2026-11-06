@@ -81,36 +81,41 @@ class TvAlbumPermissionManager(
      * 设置富文本（下划线+可点击文本）
      */
     private fun setupRichText() {
-        val fullText = context.getString(R.string.tip_partial_media_access)
-        val clickableText = context.getString(R.string.tip_partial_click_text)
-        val startIndex = fullText.indexOf(clickableText)
-        val endIndex = startIndex + clickableText.length
+        val fullText = context.getString(R.string.tip_partial_click_text)
+//        val fullText = context.getString(R.string.tip_partial_media_access)
+//        val clickableText = context.getString(R.string.tip_partial_click_text)
+//        val startIndex = fullText.indexOf(clickableText)
+//        val endIndex = startIndex + clickableText.length
+//
+//        val spannable = SpannableString(fullText).apply {
+//            // 添加下划线
+//            setSpan(UnderlineSpan(), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//            // 添加点击事件
+//            setSpan(object : ClickableSpan() {
+//                override fun onClick(widget: View) {
+//                    requestMoreMediaAccess()
+//                }
+//
+//                override fun updateDrawState(ds: android.text.TextPaint) {
+//                    super.updateDrawState(ds)
+//                    ds.isUnderlineText = true
+//                    ds.bgColor = Color.TRANSPARENT
+//                    // 从主题属性获取颜色
+//                    val ta = context.theme.obtainStyledAttributes(intArrayOf(R.attr.album_element_color))
+//                    ds.color = ta.getColor(0, Color.WHITE)
+//                    ta.recycle()
+//                }
+//            }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//        }
 
-        val spannable = SpannableString(fullText).apply {
-            // 添加下划线
-            setSpan(UnderlineSpan(), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            // 添加点击事件
-            setSpan(object : ClickableSpan() {
-                override fun onClick(widget: View) {
-                    requestMoreMediaAccess()
-                }
-
-                override fun updateDrawState(ds: android.text.TextPaint) {
-                    super.updateDrawState(ds)
-                    ds.isUnderlineText = true
-                    ds.bgColor = Color.TRANSPARENT
-                    // 从主题属性获取颜色
-                    val ta = context.theme.obtainStyledAttributes(intArrayOf(R.attr.album_element_color))
-                    ds.color = ta.getColor(0, Color.WHITE)
-                    ta.recycle()
-                }
-            }, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
-        fragmentAlbumZjhBinding.tvAlbumPermission.apply {
-            text = spannable
-            movementMethod = LinkMovementMethod.getInstance()
-            highlightColor = Color.TRANSPARENT
+//        fragmentAlbumZjhBinding.tvAlbumPermission.apply {
+//            text = spannable
+//            movementMethod = LinkMovementMethod.getInstance()
+//            highlightColor = Color.TRANSPARENT
+//        }
+        fragmentAlbumZjhBinding.tvAlbumPermission.text = fullText
+        fragmentAlbumZjhBinding.flAlbumPermission.setOnClickListener {
+            requestMoreMediaAccess()
         }
     }
 
@@ -119,7 +124,7 @@ class TvAlbumPermissionManager(
      */
     private fun observePermissionState() {
         val currentPermissionState = albumModel.isLimitedAccessPermission()
-        fragmentAlbumZjhBinding.tvAlbumPermission.visibility = if (currentPermissionState == PermissionState.LimitedAccess) {
+        fragmentAlbumZjhBinding.flAlbumPermission.visibility = if (currentPermissionState == PermissionState.LimitedAccess) {
             View.VISIBLE
         } else {
             View.GONE

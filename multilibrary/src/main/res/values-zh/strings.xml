@@ -51,6 +51,8 @@
 
     <string name="z_multi_library_button_next">Next (%1$d)</string>
 
+    <string name="z_multi_library_single_preview_next">下一页</string>
+
     <string name="z_multi_library_show_thumbnails">展现的缩略图</string>
     <string name="z_multi_library_gif_label">gif标签</string>
 
@@ -62,7 +64,7 @@
     <string name="z_multi_library_camera">正在使用相机</string>
 
     <string name="tip_partial_media_access">仅可访问部分相册多媒体「点击选择更多图片」</string>
-    <string name="tip_partial_click_text">「点击选择更多图片」</string>
+    <string name="tip_partial_click_text">点击选择更多图片</string>
 
     <!-- endregion -->
 

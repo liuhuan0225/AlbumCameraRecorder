@@ -1,0 +1,93 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="z_multi_library_album">相簿</string>
+    <string name="z_multi_library_take_photos">拍照</string>
+    <string name="z_multi_library_sound_recording">錄音</string>
+    <string name="z_multi_library_setting">設定</string>
+    <string name="z_multi_library_hint">提示</string>
+    <string name="z_multi_library_ok">好</string>
+    <string name="z_multi_library_cancel">取消</string>
+    <string name="z_multi_library_to_use_this_feature">使用此功能需要</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files">\n檔案讀取權限來讀取相關檔案</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files_by_image">\n圖片檔案讀取權限來讀取圖片檔案</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files_by_video">\n影片檔案讀取權限來讀取影片檔案</string>
+    <string name="z_multi_library_record_permission_to_record_sound">\n錄音權限來錄製聲音</string>
+    <string name="z_multi_library_record_permission_to_shoot">\n錄製權限來拍攝</string>
+    <string name="z_multi_library_Otherwise_it_cannot_run_normally_and_will_apply_for_relevant_permissions_from_you">\n否則無法正常運作，接下來會向您申請相關權限</string>
+
+    <string name="z_multi_library_in_settings_apply">在設定 - 應用程式 - %1$s - 權限中開啟</string>
+    <string name="z_multi_library_in_settings_apply_files">檔案，</string>
+    <string name="z_multi_library_in_settings_apply_image">圖片，</string>
+    <string name="z_multi_library_in_settings_apply_video">影片，</string>
+    <string name="z_multi_library_in_settings_apply_sound">錄音，</string>
+    <string name="z_multi_library_in_settings_apply_camera">錄製，</string>
+    <string name="z_multi_library_enable_storage_and_camera_permissions_for_normal_use_of_related_functions"> 權限，以正常使用相關功能</string>
+    <string name="permission_has_been_set_and_will_no_longer_be_asked">權限已被設定不再詢問，需要自行到設定介面啟動權限</string>
+    <string name="z_multi_library_press_confirm_again_to_close">再按一次確認關閉</string>
+    <string name="z_multi_library_the_camera_limit_has_been_reached">已達拍照上限</string>
+    <string name="z_one_of_these_three_albumSetting_camerasSetting_and_recordDerSetting_must_be_set">必須設定這三個 albumSetting、camerasSetting 和 recordDerSetting 中的其中一個</string>
+
+    <!-- region 相簿 -->
+
+    <string name="z_multi_library_album_name_all">全部</string>
+
+    <string name="z_multi_library_button_preview">預覽</string>
+    <string name="z_multi_library_button_edit">編輯</string>
+    <string name="z_multi_library_empty_text">還沒有圖片或影片</string>
+    <string name="z_multi_library_default_to_record">快速錄製</string>
+
+
+    <string name="z_multi_library_error_over_count" tools:ignore="PluralsCandidate">
+        <item quantity="other">最多只能選擇 %1$d 個檔案</item>
+    </string>
+    <string name="z_multi_library_error_over_count_video">最多只能選擇 %1$d 個影片</string>
+    <string name="z_multi_library_error_over_count_image">最多只能選擇 %1$d 張圖片</string>
+    <string name="z_multi_library_error_file_type">不支援的檔案類型</string>
+    <string name="z_multi_library_error_type_conflict">無法同時選擇圖片和影片</string>
+    <string name="z_multi_library_error_over_original_size">"此照片大於 %1$d MB，無法上傳，將取消勾選原圖"</string>
+    <string name="z_multi_library_error_over_original_count" tools:ignore="PluralsCandidate">"有 %1$d 張照片大於 %2$d MB\n無法上傳，將取消勾選原圖"</string>
+    <string name="z_multi_library_button_original">原圖</string>
+    <string name="z_multi_library_button_sure_default">確定</string>
+    <string name="z_multi_library_button_sure">確定(%1$d)</string>
+
+    <string name="z_multi_library_button_next">下一頁 (%1$d)</string>
+    <string name="z_multi_library_single_preview_next">下一頁</string>
+
+    <string name="z_multi_library_show_thumbnails">顯示的縮圖</string>
+    <string name="z_multi_library_gif_label">GIF 標籤</string>
+
+    <string name="z_multi_library_album_num">%1$s (%2$d)</string>
+
+    <string name="z_load_album_failed">載入相簿失敗</string>
+    <string name="z_load_media_failed">載入媒體資料失敗</string>
+    <string name="z_load_more_failed">載入更多失敗</string>
+    <string name="z_multi_library_camera">正在使用相機</string>
+
+    <string name="tip_partial_media_access">僅可存取部分相簿多媒體「點擊選擇更多圖片」</string>
+    <string name="tip_partial_click_text">點擊選擇更多圖片</string>
+
+    <!-- endregion -->
+
+    <string name="z_multi_library_light_touch_take_long_press_camera">輕觸拍照，長按錄影</string>
+    <string name="z_multi_library_light_touch_take">輕觸拍照</string>
+    <string name="z_multi_library_long_press_camera">長按錄影</string>
+    <string name="z_multi_library_light_touch_camera">輕觸錄影</string>
+    <string name="z_multi_library_touch_your_suspension">輕觸暫停</string>
+    <string name="z_multi_library_long_press_sound_recording">長按錄音</string>
+    <string name="z_multi_library_the_recording_time_is_too_short">錄製時間過短</string>
+    <string name="z_long_press_to_continue_recording">支援繼續錄製</string>
+
+    <!-- region 錄影 -->
+    <string name="z_multi_library_path_circle">M 0 60 v 0 A 60 60 0 0 0 60 120 h 0 A 60 60 0 0 0 120 60 v 0 A 60 60 0 0 0 60 0 h 0 A 60 60 0 0 0 0 60</string>
+    <string name="z_multi_library_ic_baseline_done">M 3.4 13.4 L 9 19 L 21 7 L 19.6 5.6 L 9 16.2 L 9 16.2 L 4.8 12 L 3.4 13.4</string>
+    <string name="z_multi_library_ic_baseline_stop">M 6 6 L 6 18 L 18 18 L 18 6 L 14.898 6 L 11.878 6 L 8.939 6 L 6 6</string>
+    <string name="z_multi_library_delete_button">刪除按鈕</string>
+    <string name="z_multi_library_play_button">播放按鈕</string>
+    <string name="z_multi_library_choose_to_click_to_confirm_these">選擇後才能點擊確認這些</string>
+    <string name="z_multi_library_confirm">確定</string>
+
+    <string name="z_multi_library_working_video_click_later">請勿頻繁操作</string>
+    <string name="z_multi_library_crop_back">返回</string>
+
+    <!-- endregion -->
+
+</resources>

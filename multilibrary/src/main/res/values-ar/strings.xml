@@ -1,0 +1,112 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="z_multi_library_album">الألبوم</string>
+    <string name="z_multi_library_take_photos">التقاط الصور</string>
+    <string name="z_multi_library_sound_recording">تسجيل الصوت</string>
+    <string name="z_multi_library_setting">الإعدادات</string>
+    <string name="z_multi_library_hint">تنبيه</string>
+    <string name="z_multi_library_ok">موافق</string>
+    <string name="z_multi_library_cancel">إلغاء</string>
+    <string name="z_multi_library_to_use_this_feature">لاستخدام هذه الميزة</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files">\nإذن قراءة الملفات لقراءة الملفات ذات الصلة</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files_by_image">\nإذن قراءة الصور لقراءة ملفات الصور</string>
+    <string name="z_multi_library_file_read_and_write_permission_to_read_and_store_related_files_by_video">\nإذن قراءة الفيديوهات لقراءة ملفات الفيديو</string>
+    <string name="z_multi_library_record_permission_to_record_sound">\nإذن التسجيل لتسجيل الصوت</string>
+    <string name="z_multi_library_record_permission_to_shoot">\nإذن التسجيل للتصوير</string>
+    <string name="z_multi_library_Otherwise_it_cannot_run_normally_and_will_apply_for_relevant_permissions_from_you">\nوإلا فلن يعمل بشكل طبيعي، وسيطلب منك الأذونات ذات الصلة بعد ذلك</string>
+
+    <string name="z_multi_library_in_settings_apply">فعّله في الإعدادات - التطبيقات - %1$s - الأذونات</string>
+    <string name="z_multi_library_in_settings_apply_files">الملفات،</string>
+    <string name="z_multi_library_in_settings_apply_image">الصور،</string>
+    <string name="z_multi_library_in_settings_apply_video">الفيديوهات،</string>
+    <string name="z_multi_library_in_settings_apply_sound">الميكروفون،</string>
+    <string name="z_multi_library_in_settings_apply_camera">الكاميرا،</string>
+    <string name="z_multi_library_enable_storage_and_camera_permissions_for_normal_use_of_related_functions">الأذونات اللازمة لاستخدام الوظائف ذات الصلة بشكل طبيعي</string>
+    <string name="permission_has_been_set_and_will_no_longer_be_asked">تم تعيين الإذن ولن يتم السؤال مرة أخرى، يجب الانتقال إلى واجهة الإعدادات لتفعيله</string>
+    <string name="z_multi_library_press_confirm_again_to_close">اضغط موافق مرة أخرى للإغلاق</string>
+    <string name="z_multi_library_the_camera_limit_has_been_reached">تم الوصول إلى الحد الأقصى للتصوير</string>
+    <string name="z_one_of_these_three_albumSetting_camerasSetting_and_recordDerSetting_must_be_set">يجب تعيين أحد هذه الثلاثة: albumSetting أو camerasSetting أو recordDerSetting</string>
+
+    <!-- region 相册 -->
+
+    <string name="z_multi_library_album_name_all">الكل</string>
+
+    <string name="z_multi_library_button_preview">معاينة</string>
+    <string name="z_multi_library_button_edit">تعديل</string>
+    <string name="z_multi_library_empty_text">لا توجد صور أو فيديوهات بعد</string>
+    <string name="z_multi_library_default_to_record">تسجيل سريع</string>
+
+
+    <string name="z_multi_library_error_over_count" tools:ignore="PluralsCandidate">
+        <item quantity="one">يمكنك تحديد ملف واحد كحد أقصى</item>
+        <item quantity="two">يمكنك تحديد ملفين كحد أقصى</item>
+        <item quantity="few">يمكنك تحديد %1$d ملفات كحد أقصى</item>
+        <item quantity="many">يمكنك تحديد %1$d ملفًا كحد أقصى</item>
+        <item quantity="other">يمكنك تحديد %1$d ملفات كحد أقصى</item>
+    </string>
+    <string name="z_multi_library_error_over_count_video" tools:ignore="PluralsCandidate">
+        <item quantity="one">يمكنك تحديد فيديو واحد كحد أقصى</item>
+        <item quantity="two">يمكنك تحديد فيديوهين كحد أقصى</item>
+        <item quantity="few">يمكنك تحديد %1$d فيديوهات كحد أقصى</item>
+        <item quantity="many">يمكنك تحديد %1$d فيديوًا كحد أقصى</item>
+        <item quantity="other">يمكنك تحديد %1$d فيديو كحد أقصى</item>
+    </string>
+    <string name="z_multi_library_error_over_count_image" tools:ignore="PluralsCandidate">
+        <item quantity="one">يمكنك تحديد صورة واحدة كحد أقصى</item>
+        <item quantity="two">يمكنك تحديد صورتين كحد أقصى</item>
+        <item quantity="few">يمكنك تحديد %1$d صور كحد أقصى</item>
+        <item quantity="many">يمكنك تحديد %1$d صورةً كحد أقصى</item>
+        <item quantity="other">يمكنك تحديد %1$d صور كحد أقصى</item>
+    </string>
+    <string name="z_multi_library_error_file_type">نوع الملف غير مدعوم</string>
+    <string name="z_multi_library_error_type_conflict">لا يمكن تحديد الصور والفيديوهات في نفس الوقت</string>
+    <string name="z_multi_library_error_over_original_size">"إذا كانت الصورة أكبر من %1$d ميغابايت ولا يمكن تحميلها، سيتم إلغاء تحديد الصورة الأصلية"</string>
+    <string name="z_multi_library_error_over_original_count" tools:ignore="PluralsCandidate">
+        <item quantity="one">"إذا كانت هناك صورة واحدة أكبر من %2$d ميغابايت\nولا يمكن تحميلها، سيتم إلغاء تحديد الصورة الأصلية"</item>
+        <item quantity="other">"إذا كانت هناك %1$d صور أكبر من %2$d ميغابايت\nولا يمكن تحميلها، سيتم إلغاء تحديد الصورة الأصلية"</item>
+    </string>
+    <string name="z_multi_library_button_original">الصورة الأصلية</string>
+    <string name="z_multi_library_button_sure_default">تأكيد</string>
+    <string name="z_multi_library_button_sure">تأكيد(%1$d)</string>
+
+    <string name="z_multi_library_button_next">التالي (%1$d)</string>
+    <string name="z_multi_library_single_preview_next">التالي</string>
+
+    <string name="z_multi_library_show_thumbnails">الصورة المصغّرة المعروضة</string>
+    <string name="z_multi_library_gif_label">تسمية GIF</string>
+
+    <string name="z_multi_library_album_num">%1$s (%2$d)</string>
+
+    <string name="z_load_album_failed">تعذر تحميل الألبوم</string>
+    <string name="z_load_media_failed">تعذر تحميل بيانات الوسائط</string>
+    <string name="z_load_more_failed">تعذر تحميل المزيد</string>
+    <string name="z_multi_library_camera">جارٍ استخدام الكاميرا</string>
+
+    <string name="tip_partial_media_access">الوصول الجزئي إلى الوسائط «اضغط لاختيار المزيد من الصور»</string>
+    <string name="tip_partial_click_text">اضغط لاختيار المزيد من الصور</string>
+
+    <!-- endregion -->
+
+    <string name="z_multi_library_light_touch_take_long_press_camera">انقر للتصوير، واضغط مطولاً للفيديو</string>
+    <string name="z_multi_library_light_touch_take">انقر لالتقاط صورة</string>
+    <string name="z_multi_library_long_press_camera">اضغط مطولاً لتسجيل الفيديو</string>
+    <string name="z_multi_library_light_touch_camera">انقر لتسجيل الفيديو</string>
+    <string name="z_multi_library_touch_your_suspension">انقر للإيقاف المؤقت</string>
+    <string name="z_multi_library_long_press_sound_recording">اضغط مطولاً للتسجيل</string>
+    <string name="z_multi_library_the_recording_time_is_too_short">مدة التسجيل قصيرة جداً</string>
+    <string name="z_long_press_to_continue_recording">يدعم متابعة التسجيل</string>
+
+    <!-- region 录像 -->
+    <string name="z_multi_library_path_circle">M 0 60 v 0 A 60 60 0 0 0 60 120 h 0 A 60 60 0 0 0 120 60 v 0 A 60 60 0 0 0 60 0 h 0 A 60 60 0 0 0 0 60</string>
+    <string name="z_multi_library_ic_baseline_done">M 3.4 13.4 L 9 19 L 21 7 L 19.6 5.6 L 9 16.2 L 9 16.2 L 4.8 12 L 3.4 13.4</string>
+    <string name="z_multi_library_ic_baseline_stop">M 6 6 L 6 18 L 18 18 L 18 6 L 14.898 6 L 11.878 6 L 8.939 6 L 6 6</string>
+    <string name="z_multi_library_delete_button">زر الحذف</string>
+    <string name="z_multi_library_play_button">زر التشغيل</string>
+    <string name="z_multi_library_choose_to_click_to_confirm_these">يمكنك النقر للتأكيد إذا اخترتها</string>
+    <string name="z_multi_library_confirm">تأكيد</string>
+
+    <string name="z_multi_library_working_video_click_later">تجنب تكرار العمليات بسرعة</string>
+    <string name="z_multi_library_crop_back">رجوع</string>
+
+    <!-- endregion -->
+
+</resources>

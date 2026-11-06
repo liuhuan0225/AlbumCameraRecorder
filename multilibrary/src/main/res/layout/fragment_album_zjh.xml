@@ -15,6 +15,10 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:contentInsetLeft="0dp"
+            app:contentInsetRight="0dp"
+            app:contentInsetStart="0dp"
+            app:contentInsetEnd="0dp"
             android:background="?android:attr/colorPrimary"
             android:elevation="1dp"
             android:theme="?attr/toolbar.zhongjh"
@@ -32,7 +36,8 @@
                     android:contentDescription="@string/z_multi_library_delete_button"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:srcCompat="@drawable/ic_close_white_24dp" />
+                    android:layout_marginStart="16dp"
+                    app:srcCompat="@drawable/ic_back" />
 
                 <View
                     android:id="@+id/selectedAlbum"
@@ -77,19 +82,32 @@
                     app:layout_constraintStart_toEndOf="@+id/tvAlbumTitle"
                     tools:ignore="ContentDescription,RtlSymmetry" />
 
-                <TextView
-                    tools:visibility="visible"
-                    android:visibility="gone"
-                    android:id="@+id/tvAlbumPermission"
+                <FrameLayout
+                    android:id="@+id/flAlbumPermission"
                     android:layout_width="0dp"
-                    android:layout_height="32dp"
-                    android:gravity="center"
-                    tools:text="您设置了仅访问部分多媒体【点击可修改访问权限】"
-                    android:textColor="?attr/album.element.color"
+                    android:layout_height="36dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/selectedAlbum"
-                    tools:textColor="@color/black" />
+                    android:background="#1AFFFFFF"
+                    >
+                    <TextView
+                        android:id="@+id/tvAlbumPermission"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="16dp"
+                        android:gravity="center"
+                        android:textColor="?attr/album.element.color"
+                        tools:textColor="@color/black" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_gravity="center_vertical|end"
+                        app:srcCompat="@drawable/ic_to_right" />
+                </FrameLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -177,8 +195,8 @@
                 android:layout_height="match_parent"
                 android:background="@drawable/bg_album_bottom_preview_zjh"
                 android:gravity="center"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:text="@string/z_multi_library_button_preview"
                 android:textColor="@color/album_bottom_button_text_zjh"
                 android:layout_marginEnd="8dp"
@@ -193,8 +211,8 @@
                 android:layout_gravity="end"
                 android:background="@drawable/bg_album_bottom_next_zjh"
                 android:gravity="center"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/album_bottom_button_text_zjh"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -273,9 +291,9 @@
             android:layout_gravity="end"
             android:indeterminateTint="?attr/bottomToolbar.apply.textColor"
             android:indeterminateTintMode="src_atop"
-            android:paddingLeft="16dp"
+            android:paddingStart="16dp"
             android:paddingTop="8dp"
-            android:paddingRight="16dp"
+            android:paddingEnd="16dp"
             android:paddingBottom="8dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
