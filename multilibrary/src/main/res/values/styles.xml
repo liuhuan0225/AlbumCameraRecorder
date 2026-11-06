@@ -174,7 +174,7 @@
 
     <style name="ShapeAppearanceOverlay.SelectedMediaThumbnail" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
+        <item name="cornerSize">9dp</item>
     </style>
 
     <style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">

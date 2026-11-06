@@ -1447,7 +1447,7 @@ class PreviewFragment : BaseFragment() {
     class ViewHolder internal constructor(rootView: View) {
         var sharedAnimationView: SharedAnimationView =
             rootView.findViewById(R.id.sharedAnimationView)
-        var iBtnBack: ImageButton = rootView.findViewById(R.id.iBtnBack)
+        var iBtnBack: ImageView = rootView.findViewById(R.id.iBtnBack)
         var tvEdit: TextView = rootView.findViewById(R.id.tvEdit)
         var groupOriginal: Group = rootView.findViewById(R.id.groupOriginal)
         var original: CheckRadioView = rootView.findViewById(R.id.original)

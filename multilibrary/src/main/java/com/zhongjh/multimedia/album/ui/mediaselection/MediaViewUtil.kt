@@ -61,6 +61,12 @@ class MediaViewUtil(
         // 删除动画
         recyclerView.itemAnimator = null
         recyclerView.layoutManager = GridLayoutManager(context, spanCount)
+        val spacing = if (mAlbumSpec.spacing > 0) {
+            MediaGridInset.calculateSpacing(mAlbumSpec.spacing, spanCount)
+        } else {
+            val defaultSpacing = context.resources.getDimensionPixelSize(R.dimen.z_media_grid_spacing)
+            MediaGridInset.calculateSpacing(defaultSpacing, spanCount)
+        }
         // 需要先设置布局获取确定的spanCount，才能设置adapter
         mAdapter = AlbumAdapter(selectedModel, placeholder, imageResize)
         mAdapter?.registerCheckStateListener(this)
@@ -69,12 +75,7 @@ class MediaViewUtil(
         recyclerView.setHasFixedSize(true)
 
         // 加载线,如果有配置则加载
-        if (mAlbumSpec.spacing > 0) {
-            recyclerView.addItemDecoration(MediaGridInset(spanCount, mAlbumSpec.spacing, false))
-        } else {
-            val spacing = context.resources.getDimensionPixelSize(R.dimen.z_media_grid_spacing)
-            recyclerView.addItemDecoration(MediaGridInset(spanCount, spacing, false))
-        }
+        recyclerView.addItemDecoration(MediaGridInset(spanCount, spacing, false))
 
         // recyclerView加载数据
         recyclerView.adapter = mAdapter
@@ -297,9 +298,13 @@ class MediaViewUtil(
                 spanCount = (lm as GridLayoutManager).spanCount
             }
             val screenWidth = context.resources.displayMetrics.widthPixels
-            val availableWidth = screenWidth - context.resources.getDimensionPixelSize(
-                R.dimen.z_media_grid_spacing
-            ) * (spanCount - 1)
+            val spacing = if (mAlbumSpec.spacing > 0) {
+                MediaGridInset.calculateSpacing(mAlbumSpec.spacing, spanCount)
+            } else {
+                val defaultSpacing = context.resources.getDimensionPixelSize(R.dimen.z_media_grid_spacing)
+                MediaGridInset.calculateSpacing(defaultSpacing, spanCount)
+            }
+            val availableWidth = screenWidth - spacing * (spanCount - 1)
             // 图片调整后的大小：获取列表的每个格子的宽度
             imageResize = availableWidth / spanCount
             // 图片调整后的大小 * 缩放比例

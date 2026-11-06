@@ -407,14 +407,6 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 点击原图
         mBinding.originalLayout.setOnClickListener { mOriginalManage.originalClick() }
 
-        // 点击Loading停止
-        mBinding.pbLoading.setOnClickListener {
-            // 中断线程
-            mCompressFileJob?.cancel()
-            // 恢复界面可用
-            setControlTouchEnable(true)
-        }
-
         // 触发滑动事件
         mBinding.bottomToolbar.onListener = ConstraintLayoutBehavior.Listener { translationY: Float -> (requireActivity() as MainActivity).onDependentViewChanged(translationY) }
     }
@@ -1179,13 +1171,11 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      */
     private fun setControlTouchEnable(enable: Boolean) {
         mBinding.recyclerview.isEnabled = enable
-        // 如果不可用就显示 加载中 view,否则隐藏
+        // 如果不可用就隐藏确认按钮并禁用预览
         if (!enable) {
-            mBinding.pbLoading.visibility = View.VISIBLE
             mBinding.buttonApply.visibility = View.GONE
             mBinding.buttonPreview.isEnabled = false
         } else {
-            mBinding.pbLoading.visibility = View.GONE
             mBinding.buttonApply.visibility = View.VISIBLE
             mBinding.buttonPreview.isEnabled = true
         }

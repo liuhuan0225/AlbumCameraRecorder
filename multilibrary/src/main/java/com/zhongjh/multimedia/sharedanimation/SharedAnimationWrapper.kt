@@ -3,6 +3,7 @@ package com.zhongjh.multimedia.sharedanimation
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import kotlin.math.roundToInt
 
@@ -42,8 +43,11 @@ class SharedAnimationWrapper(private val viewWrapper: View) {
         }
 
     init {
-        if (params is LinearLayout.LayoutParams) {
-            params.gravity = Gravity.START
+        // 坐标来自屏幕物理位置，必须使用绝对 LEFT；START 在 RTL 下会变成 RIGHT，
+        // 导致 leftMargin 被忽略，所有 item 都从最右侧开始动画
+        when (params) {
+            is FrameLayout.LayoutParams -> params.gravity = Gravity.TOP or Gravity.LEFT
+            is LinearLayout.LayoutParams -> params.gravity = Gravity.LEFT
         }
     }
 

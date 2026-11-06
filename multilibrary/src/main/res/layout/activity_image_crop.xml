@@ -27,22 +27,22 @@
     <View
         android:id="@+id/topBar"
         android:layout_width="0dp"
-        android:layout_height="@dimen/crop_top_bar_height"
+        android:layout_height="0dp"
         android:background="@color/crop_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonBack"
+        />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/buttonBack"
-        android:layout_width="@dimen/crop_back_button_size"
+        android:layout_width="wrap_content"
         android:layout_height="@dimen/crop_back_button_size"
         android:layout_marginStart="@dimen/crop_page_margin"
-        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/z_multi_library_crop_back"
         android:scaleType="centerInside"
         android:src="@drawable/ic_back"
-        app:layout_constraintBottom_toBottomOf="@id/topBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/statusBarSpace" />
 
@@ -50,9 +50,10 @@
         android:id="@+id/statusBarSpace"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/topBar"
-        app:layout_constraintStart_toStartOf="@id/topBar"
-        app:layout_constraintTop_toTopOf="@id/topBar" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
 
     <Button
         android:id="@+id/buttonConfirm"
