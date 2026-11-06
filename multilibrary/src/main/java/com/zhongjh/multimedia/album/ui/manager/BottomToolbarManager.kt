@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.zhongjh.common.entity.LocalMedia
@@ -28,25 +29,7 @@ class BottomToolbarManager(
             binding.root.context, LinearLayoutManager.HORIZONTAL, false
         )
         binding.rvSelectedMedia.adapter = selectedMediaAdapter
-        binding.rvSelectedMedia.addItemDecoration(object : RecyclerView.ItemDecoration() {
-            override fun getItemOffsets(
-                outRect: Rect,
-                view: View,
-                parent: RecyclerView,
-                state: RecyclerView.State
-            ) {
-                if (parent.getChildAdapterPosition(view) > 0) {
-                    val spacing = binding.root.context.resources.getDimensionPixelSize(
-                        R.dimen.z_selected_media_bar_spacing
-                    )
-                    if (parent.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
-                        outRect.right = spacing
-                    } else {
-                        outRect.left = spacing
-                    }
-                }
-            }
-        })
+
     }
 
     /**

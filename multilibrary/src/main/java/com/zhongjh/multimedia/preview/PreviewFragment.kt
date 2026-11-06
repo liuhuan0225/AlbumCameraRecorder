@@ -477,25 +477,6 @@ class PreviewFragment : BaseFragment() {
             { false }
         )
         mViewHolder.rvSelectedMedia.adapter = mPreviewSelectedBarAdapter
-        mViewHolder.rvSelectedMedia.addItemDecoration(object : RecyclerView.ItemDecoration() {
-            override fun getItemOffsets(
-                outRect: Rect,
-                view: View,
-                parent: RecyclerView,
-                state: RecyclerView.State
-            ) {
-                if (parent.getChildAdapterPosition(view) > 0) {
-                    val spacing = requireContext().resources.getDimensionPixelSize(
-                        R.dimen.z_selected_media_bar_spacing
-                    )
-                    if (parent.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
-                        outRect.right = spacing
-                    } else {
-                        outRect.left = spacing
-                    }
-                }
-            }
-        })
     }
 
     /**
