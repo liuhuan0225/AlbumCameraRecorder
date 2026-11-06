@@ -38,7 +38,6 @@
             android:layout_height="16dp"
             android:layout_gravity="bottom|start"
             android:layout_marginStart="4dp"
-            android:fontFamily="sans-serif"
             android:gravity="center_vertical"
             android:textColor="@android:color/white"
             android:textSize="12sp"

@@ -62,7 +62,6 @@
         android:layout_marginEnd="@dimen/crop_page_margin"
         android:layout_marginBottom="@dimen/crop_button_margin_bottom"
         android:background="@drawable/bg_crop_confirm"
-        android:fontFamily="sans-serif-medium"
         android:includeFontPadding="false"
         android:lineSpacingExtra="4sp"
         android:text="@string/z_multi_library_confirm"

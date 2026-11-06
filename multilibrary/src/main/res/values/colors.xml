@@ -27,6 +27,6 @@
     <color name="album_bottom_next_color">#FF7522</color>
 
     <color name="crop_background">#141216</color>
-    <color name="crop_mask">#66000000</color>
+    <color name="crop_mask">#cc000000</color>
     <color name="crop_confirm">#FF7522</color>
 </resources>

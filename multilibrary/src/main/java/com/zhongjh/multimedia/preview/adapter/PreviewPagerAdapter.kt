@@ -266,7 +266,9 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
             holder.videoView.setVideoURI(uri)
         }
         holder.videoView.start()
-        hideCover(holder)
+        if (holder.isPrepared && holder.videoView.currentPosition > 0) {
+            hideCover(holder)
+        }
         setPlayingState(holder, true)
     }
 
@@ -298,7 +300,6 @@ class PreviewPagerAdapter(private val mContext: Context, private val mActivity: 
             holder.videoView.videoHeight = mediaPlayer.videoHeight
             if (holder.isPlaying) {
                 holder.videoView.start()
-                hideCover(holder)
                 onPlaybackStateChange?.invoke()
             }
         }

@@ -83,9 +83,7 @@ import com.zhongjh.multimedia.utils.MediaStoreUtils
 import com.zhongjh.multimedia.utils.SettingsPermissionUtils
 import com.zhongjh.multimedia.widget.ConstraintLayoutBehavior
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -550,17 +548,32 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 单选图片裁剪成功后，立即关闭相册并返回结果
         mCropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                lifecycleScope.launch(Dispatchers.Main) {
+                mCompressFileJob?.cancel()
+                mCompressFileJob = lifecycleScope.request {
                     mCropLauncherData?.let { croppedItem ->
                         val saved = loadCroppedMedia(croppedItem, result.data)
                         if (saved != null) {
-                            setResultOk(arrayListOf(saved))
-                        } else {
-                            setControlTouchEnable(true)
+                            return@request mAlbumCompressFileTask
+                                .compressFileTaskDoInBackground(arrayListOf(saved), false)
                         }
                     }
+                    arrayListOf()
+                }.onSuccess { data ->
+                    if (data.isEmpty()) {
+                        setControlTouchEnable(true)
+                    } else {
+                        setResultOk(data)
+                    }
                     mCropLauncherData = null
-                }
+                }.onFail { error ->
+                    setControlTouchEnable(true)
+                    Toast.makeText(mApplicationContext, error.message, Toast.LENGTH_SHORT).show()
+                    LogUtil.e(tag, error.message.toString(), error)
+                    mCropLauncherData = null
+                }.onCancel {
+                    setControlTouchEnable(true)
+                    mCropLauncherData = null
+                }.launch()
             } else {
                 mCropLauncherData?.let { item ->
                     mSelectedModel.removeSelectedData(item, item.position)

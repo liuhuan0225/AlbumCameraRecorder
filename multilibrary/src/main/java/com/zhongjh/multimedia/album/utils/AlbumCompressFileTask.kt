@@ -65,8 +65,8 @@ class AlbumCompressFileTask(
 
             // 开始压缩逻辑，获取真实路径
             val newFileNames = absolutePath.split(".").toTypedArray()
-            // 设置压缩后的照片名称，id_CMP
-            var newFileName = item.fileId.toString() + "_CMP"
+            // 设置压缩后的照片名称
+            var newFileName = getNewFileName(item, absolutePath)
             if (newFileNames.size > 1) {
                 // 设置后缀名
                 newFileName = newFileName + "." + newFileNames[newFileNames.size - 1]
@@ -109,6 +109,17 @@ class AlbumCompressFileTask(
 
         }
         return newLocalFiles
+    }
+
+    /**
+     * 压缩缓存名称需要包含源文件标识，避免同一张图多次裁剪后复用第一次的压缩结果
+     */
+    private fun getNewFileName(item: LocalMedia, absolutePath: String): String {
+        return if (item.editorPath != null) {
+            "${item.fileId}_${File(absolutePath).nameWithoutExtension}_CMP"
+        } else {
+            "${item.fileId}_CMP"
+        }
     }
 
     /**

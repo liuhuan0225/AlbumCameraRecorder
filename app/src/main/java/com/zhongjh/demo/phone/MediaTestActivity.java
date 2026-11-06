@@ -4,13 +4,21 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.format.Formatter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.TooltipCompat;
 
+import com.bumptech.glide.Glide;
 import com.zhongjh.common.entity.LocalMedia;
 import com.zhongjh.common.enums.MimeType;
 import com.zhongjh.demo.R;
@@ -18,6 +26,7 @@ import com.zhongjh.demo.configuration.Glide4Engine;
 import com.zhongjh.demo.configuration.OnImageCompressionLuBan;
 import com.zhongjh.demo.databinding.ActivityMediaTestBinding;
 import com.zhongjh.common.utils.FileUtils;
+import com.zhongjh.common.utils.MediaUtils;
 import com.zhongjh.multimedia.settings.AlbumSetting;
 import com.zhongjh.multimedia.settings.GlobalSetting;
 import com.zhongjh.multimedia.settings.MultiMediaSetting;
@@ -78,7 +87,7 @@ public class MediaTestActivity extends AppCompatActivity {
         binding.btnCropImage1x1.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 1:1", 1f, 1f));
         binding.btnCropImage9x16.setOnClickListener(v ->
-                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 9:16", 12f, 16f));
+                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 9:16", 2f, 16f));
         binding.btnCropImageRoundMask.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop round mask", 1f, 1f,
                         R.drawable.crop_round_mask));
@@ -117,6 +126,7 @@ public class MediaTestActivity extends AppCompatActivity {
         GlobalSetting globalSetting = MultiMediaSetting.from(this).choose(mimeTypes)
                 .albumSetting(albumSetting)
                 .imageEngine(new Glide4Engine());
+        globalSetting.setOnImageCompressionListener(imageCompression);
         globalSetting.maxSelectablePerMediaType(
                 maxCount,
                 maxCount,
@@ -147,6 +157,48 @@ public class MediaTestActivity extends AppCompatActivity {
             builder.append('\n').append(getAvailablePath(media));
         }
         binding.tvResult.setText(builder);
+        showMediaResults(mediaList);
+    }
+
+    private void showMediaResults(List<LocalMedia> mediaList) {
+        binding.llMediaResults.removeAllViews();
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        for (LocalMedia media : mediaList) {
+            View itemView = layoutInflater.inflate(
+                    R.layout.item_media_test_result,
+                    binding.llMediaResults,
+                    false
+            );
+            ImageView preview = itemView.findViewById(R.id.ivPreview);
+            TextView path = itemView.findViewById(R.id.tvPath);
+            TextView size = itemView.findViewById(R.id.tvSize);
+            TextView dimensions = itemView.findViewById(R.id.tvDimensions);
+            String availablePath = getAvailablePath(media);
+            long fileSize = getFileSize(media);
+            int[] imageDimensions = MediaUtils.INSTANCE.getImageWidthAndHeight(availablePath);
+
+            Glide.with(this)
+                    .load(availablePath)
+                    .centerInside()
+                    .into(preview);
+            path.setText(availablePath);
+            size.setText(getString(R.string.media_size, Formatter.formatShortFileSize(this, fileSize)));
+            dimensions.setText(getString(
+                    R.string.media_dimensions,
+                    imageDimensions[0],
+                    imageDimensions[1]
+            ));
+            TooltipCompat.setTooltipText(path, availablePath);
+            binding.llMediaResults.addView(itemView);
+        }
+    }
+
+    private long getFileSize(LocalMedia media) {
+        if (media.getSize() > 0) {
+            return media.getSize();
+        }
+        File file = new File(getAvailablePath(media));
+        return file.exists() ? file.length() : 0L;
     }
 
     private String getAvailablePath(LocalMedia media) {

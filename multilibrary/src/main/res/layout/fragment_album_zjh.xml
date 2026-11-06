@@ -50,7 +50,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:layout_centerVertical="true"
                     android:ellipsize="end"
-                    android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:maxEms="8"
                     android:maxLines="1"
@@ -162,30 +161,51 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toTopOf="parent"
             tools:listitem="@layout/item_selected_media_bar_zjh" />
-
-        <TextView
-            android:id="@+id/buttonPreview"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="@drawable/bg_album_bottom_preview_zjh"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:text="@string/z_multi_library_button_preview"
-            android:textColor="@color/album_bottom_button_text_zjh"
-            android:textSize="16sp"
+            android:orientation="horizontal"
             android:layout_marginBottom="12dp"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_min="167dp" />
+            app:layout_constraintStart_toStartOf="parent">
+            <TextView
+                android:id="@+id/buttonPreview"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_album_bottom_preview_zjh"
+                android:gravity="center"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="@string/z_multi_library_button_preview"
+                android:textColor="@color/album_bottom_button_text_zjh"
+                android:layout_marginEnd="8dp"
+                android:textSize="16sp"
+                app:layout_constraintWidth_min="167dp" />
+
+            <TextView
+                android:id="@+id/buttonApply"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:background="@drawable/bg_album_bottom_next_zjh"
+                android:gravity="center"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:textColor="@color/album_bottom_button_text_zjh"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/groupOriginal"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:constraint_referenced_ids="originalLayout,original,tvOriginal,tvSize" />
+            app:constraint_referenced_ids="originalLayout,original,tvOriginal,tvSize"
+            android:visibility="gone"
+            />
 
         <View
             android:id="@+id/originalLayout"
@@ -225,7 +245,6 @@
             app:layout_constraintEnd_toStartOf="@+id/tvSize"
             app:layout_constraintStart_toEndOf="@+id/original"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/buttonApply"
             tools:ignore="RtlSymmetry" />
 
         <TextView
@@ -245,23 +264,7 @@
             tools:text="(123)"
             tools:visibility="visible" />
 
-        <TextView
-            android:id="@+id/buttonApply"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginEnd="16dp"
-            android:layout_gravity="end"
-            android:background="@drawable/bg_album_bottom_next_zjh"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:textColor="@color/album_bottom_button_text_zjh"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_min="167dp" />
+
 
         <ProgressBar
             android:id="@+id/pbLoading"

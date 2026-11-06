@@ -30,8 +30,8 @@
 
     <string name="z_multi_library_album_name_all">all</string>
 
-    <string name="z_multi_library_button_preview">preview</string>
-    <string name="z_multi_library_button_edit">edit</string>
+    <string name="z_multi_library_button_preview">Preview</string>
+    <string name="z_multi_library_button_edit">Edit</string>
     <string name="z_multi_library_empty_text">No pictures or videos yet</string>
     <string name="z_multi_library_default_to_record">Fast recording</string>
 

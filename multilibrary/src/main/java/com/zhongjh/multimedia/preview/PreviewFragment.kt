@@ -233,6 +233,11 @@ class PreviewFragment : BaseFragment() {
     private var mFirstSharedAnimation = true
 
     /**
+     * 预览工具栏是否处于显示状态
+     */
+    private var mPreviewBarsVisible = true
+
+    /**
      * 共享播放进度条定时器
      */
     private val mProgressHandler = Handler(Looper.getMainLooper())
@@ -321,8 +326,7 @@ class PreviewFragment : BaseFragment() {
         }
         initListener()
         initObserveData()
-        updateApplyButton()
-        updatePreviewSelectedMedia()
+        refreshSelectedState()
     }
 
     override fun onBackPressed(): Boolean {
@@ -501,7 +505,7 @@ class PreviewFragment : BaseFragment() {
     }
 
     /**
-     * 在已选数据预览中，只移除当前媒体；底部列表保持展示并加蒙层
+     * 在已选数据预览中移除当前媒体，并刷新底部列表和按钮状态
      */
     private fun removeCurrentMediaFromList(item: LocalMedia) {
         val position = mLocalMedias.indexOfFirst { it.fileId == item.fileId }
@@ -512,7 +516,7 @@ class PreviewFragment : BaseFragment() {
         if (currentItem?.fileId == item.fileId) {
             mViewHolder.checkView.setChecked(false)
         }
-        updatePreviewSelectedMedia()
+        refreshSelectedState()
     }
 
     /**
@@ -645,18 +649,16 @@ class PreviewFragment : BaseFragment() {
      * 单击预览图切换顶栏和底栏
      */
     private fun togglePreviewBars() {
-        val isBarsVisible = mViewHolder.constraintLayout.visibility == View.VISIBLE
-        if (isBarsVisible) {
-            mViewHolder.constraintLayout.visibility = View.GONE
-            mViewHolder.bottomToolbar.visibility = View.GONE
-            mViewHolder.videoPlaybackBar.visibility = View.GONE
-        } else {
-            mViewHolder.constraintLayout.visibility = View.VISIBLE
-            mViewHolder.bottomToolbar.visibility = View.VISIBLE
+        mPreviewBarsVisible = !mPreviewBarsVisible
+        mViewHolder.constraintLayout.isVisible = mPreviewBarsVisible
+        if (mPreviewBarsVisible) {
             mLocalMedias.getOrNull(mViewPager2.currentItem)?.let { currentMedia ->
                 updatePlaybackBar(currentMedia)
             }
+        } else {
+            mViewHolder.videoPlaybackBar.visibility = View.GONE
         }
+        updateBottomToolbarVisibility()
     }
 
     /**
@@ -891,6 +893,7 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.tvEdit.isEnabled = true
             mViewHolder.originalLayout.isEnabled = true
         }
+        updateBottomToolbarVisibility()
     }
 
     /**
@@ -928,8 +931,7 @@ class PreviewFragment : BaseFragment() {
                 }
             }
         }
-        updateApplyButton()
-        updatePreviewSelectedMedia()
+        refreshSelectedState()
         mAlbumSpec.onSelectedListener?.let {
             if (mPreviewType == PreviewType.ALBUM_ACTIVITY || mPreviewType == PreviewType.ALBUM_FRAGMENT) {
                 // 触发选择的接口事件
@@ -938,23 +940,26 @@ class PreviewFragment : BaseFragment() {
         }
     }
 
+    private fun refreshSelectedState() {
+        updateApplyButton()
+        updatePreviewSelectedMedia()
+    }
+
     /**
      * 更新确定按钮状态
      */
     private fun updateApplyButton() {
-        // 获取已选的图片
-        if (mAlbumSpec.singleSelectionModeEnabled()) {
-            // 单选在预览页确定时才产生选中数据，因此确定按钮始终可用
-            mViewHolder.buttonApply.setText(R.string.z_multi_library_single_preview_next)
-            mViewHolder.buttonApply.isEnabled = true
-        } else {
-            // 启用，显示数字
-            mViewHolder.buttonApply.isEnabled = true
-            mViewHolder.buttonApply.text = getString(
-                R.string.z_multi_library_button_next,
-                mSelectedModel.getSelectedData().count()
-            )
-        }
+        val selectedCount = mSelectedModel.getSelectedData().count()
+        // 单选在预览页确定时才产生选中数据，因此确定按钮始终可用
+        val enabled = mAlbumSpec.singleSelectionModeEnabled() || selectedCount > 0
+        mViewHolder.buttonApply.isEnabled = enabled
+        mViewHolder.buttonApply.alpha = if (enabled) 1F else 0.5F
+        mViewHolder.buttonApply.text =
+            if (mAlbumSpec.singleSelectionModeEnabled() || selectedCount == 0) {
+                getString(R.string.z_multi_library_single_preview_next)
+            } else {
+                getString(R.string.z_multi_library_button_next, selectedCount)
+            }
 
         // 判断是否启动操作
         if (!mApplyEnable) {
@@ -966,6 +971,13 @@ class PreviewFragment : BaseFragment() {
             mViewHolder.buttonApply.visibility = View.VISIBLE
         }
         setCheckViewEnable(mSelectedEnable)
+        updateBottomToolbarVisibility()
+    }
+
+    private fun updateBottomToolbarVisibility() {
+        val hasSelectedMedia = mSelectedModel.getSelectedData().count() > 0
+        mViewHolder.bottomToolbar.isVisible = mPreviewBarsVisible &&
+            (mAlbumSpec.singleSelectionModeEnabled() || hasSelectedMedia)
     }
 
     /**
@@ -979,8 +991,7 @@ class PreviewFragment : BaseFragment() {
             Locale.getDefault(), "%d/%d", mViewPager2.currentItem + 1, mLocalMedias.size
         )
         mViewHolder.rvSelectedMedia.isVisible =
-            !mAlbumSpec.singleSelectionModeEnabled() &&
-                (selectedCount > 0 || (mIsSelectedDataSource && mLocalMedias.isNotEmpty()))
+            !mAlbumSpec.singleSelectionModeEnabled() && selectedCount > 0
         if (isFromSelectedMedia) {
             mPreviewSelectedBarAdapter.submitList(mLocalMedias.toList())
         } else {
@@ -1413,6 +1424,7 @@ class PreviewFragment : BaseFragment() {
                 updatePlaybackProgress(item)
             }
             updatePreviewSelectedMedia()
+            updateBottomToolbarVisibility()
             onViewPageSelected(position)
         }
 
