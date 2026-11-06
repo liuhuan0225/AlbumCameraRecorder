@@ -55,7 +55,7 @@ import com.zhongjh.common.utils.LogUtil
 import com.zhongjh.common.utils.MediaUtils
 import com.zhongjh.common.utils.StatusBarUtils.initStatusBar
 import com.zhongjh.common.utils.request
-import com.zhongjh.imageedit.ImageEditActivity
+// import com.zhongjh.imageedit.ImageEditActivity
 import com.zhongjh.multimedia.BaseFragment
 import com.zhongjh.multimedia.MainActivity
 import com.zhongjh.multimedia.R
@@ -372,13 +372,13 @@ class PreviewFragment : BaseFragment() {
      * 针对回调
      */
     private fun initActivityResult() {
-        mImageEditActivityResult =
-            registerForActivityResult(StartActivityForResult()) { result: ActivityResult ->
-                if (result.resultCode == RESULT_OK) {
-                    mIsEdit = true
-                    refreshMultiMediaItem()
-                }
-            }
+//        mImageEditActivityResult =
+//            registerForActivityResult(StartActivityForResult()) { result: ActivityResult ->
+//                if (result.resultCode == RESULT_OK) {
+//                    mIsEdit = true
+//                    refreshMultiMediaItem()
+//                }
+//            }
     }
 
     /**
@@ -593,7 +593,7 @@ class PreviewFragment : BaseFragment() {
         mViewHolder.tvEdit.setOnClickListener(object : OnMoreClickListener() {
             override fun onListener(v: View) {
                 mViewHolder.tvEdit.text = resources.getText(R.string.z_multi_library_button_edit)
-                openImageEditActivity()
+//                openImageEditActivity()
             }
         })
         // 返回
@@ -805,20 +805,20 @@ class PreviewFragment : BaseFragment() {
      * 打开编辑的Activity
      */
     private fun openImageEditActivity() {
-        val item = mAdapter.getLocalMedia(getDataPosition())
-        item?.let {
-            val file = FileMediaUtil.createCacheFile(mContext, TYPE_PICTURE)
-            mEditImagePath = file.absoluteFile.toString()
-            val intent = Intent()
-            intent.setClass(requireActivity(), ImageEditActivity::class.java)
-            intent.putExtra(
-                ImageEditActivity.EXTRA_IMAGE_SCREEN_ORIENTATION,
-                requireActivity().requestedOrientation
-            )
-            intent.putExtra(ImageEditActivity.EXTRA_IMAGE_URI, item.uri)
-            intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH, file.absolutePath)
-            mImageEditActivityResult.launch(intent)
-        }
+//        val item = mAdapter.getLocalMedia(getDataPosition())
+//        item?.let {
+//            val file = FileMediaUtil.createCacheFile(mContext, TYPE_PICTURE)
+//            mEditImagePath = file.absoluteFile.toString()
+//            val intent = Intent()
+//            intent.setClass(requireActivity(), ImageEditActivity::class.java)
+//            intent.putExtra(
+//                ImageEditActivity.EXTRA_IMAGE_SCREEN_ORIENTATION,
+//                requireActivity().requestedOrientation
+//            )
+//            intent.putExtra(ImageEditActivity.EXTRA_IMAGE_URI, item.uri)
+//            intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH, file.absolutePath)
+//            mImageEditActivityResult.launch(intent)
+//        }
     }
 
     /**

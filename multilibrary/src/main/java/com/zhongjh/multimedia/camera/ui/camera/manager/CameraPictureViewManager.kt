@@ -18,7 +18,7 @@ import com.zhongjh.common.utils.FileUtils
 import com.zhongjh.common.utils.MediaStoreCompat
 import com.zhongjh.common.utils.MediaUtils
 import com.zhongjh.common.utils.request
-import com.zhongjh.imageedit.ImageEditActivity
+// import com.zhongjh.imageedit.ImageEditActivity
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.camera.entity.BitmapData
 import com.zhongjh.multimedia.camera.ui.camera.BaseCameraFragment
@@ -117,20 +117,20 @@ open class CameraPictureViewManager(baseCameraFragment: BaseCameraFragment<out C
      * 注册从图片编辑界面返回的结果处理器
      */
     override fun initActivityResult() {
-        val baseCameraFragment = fragmentRef.get() ?: return
-        // 从编辑图片界面回来
-        imageEditActivityResult = baseCameraFragment.registerForActivityResult(StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.let {
-                    // 编辑图片界面
-                    refreshEditPhoto(
-                        it.getIntExtra(ImageEditActivity.EXTRA_WIDTH, 0), it.getIntExtra(ImageEditActivity.EXTRA_HEIGHT, 0)
-                    )
-                } ?: let {
-                    return@registerForActivityResult
-                }
-            }
-        }
+//        val baseCameraFragment = fragmentRef.get() ?: return
+//        // 从编辑图片界面回来
+//        imageEditActivityResult = baseCameraFragment.registerForActivityResult(StartActivityForResult()) { result: ActivityResult ->
+//            if (result.resultCode == Activity.RESULT_OK) {
+//                result.data?.let {
+//                    // 编辑图片界面
+//                    refreshEditPhoto(
+//                        it.getIntExtra(ImageEditActivity.EXTRA_WIDTH, 0), it.getIntExtra(ImageEditActivity.EXTRA_HEIGHT, 0)
+//                    )
+//                } ?: let {
+//                    return@registerForActivityResult
+//                }
+//            }
+//        }
     }
 
     /**
@@ -138,18 +138,18 @@ open class CameraPictureViewManager(baseCameraFragment: BaseCameraFragment<out C
      * 为编辑按钮设置点击事件，启动图片编辑Activity
      */
     override fun initPhotoEditListener() {
-        fragmentRef.get()?.let { baseCameraFragment ->
-            baseCameraFragment.photoVideoLayout.photoVideoLayoutViewHolder.rlEdit.setOnClickListener { view: View ->
-                val uri = Uri.parse(view.tag.toString()).toString()
-                photoEditFile = createCacheFile(baseCameraFragment.myContext, TYPE_PICTURE)
-                val intent = Intent()
-                intent.setClass(baseCameraFragment.myContext, ImageEditActivity::class.java)
-                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SCREEN_ORIENTATION, baseCameraFragment.mainActivity?.requestedOrientation)
-                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_URI, uri)
-                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH, photoEditFile?.absolutePath)
-                imageEditActivityResult?.launch(intent)
-            }
-        }
+//        fragmentRef.get()?.let { baseCameraFragment ->
+//            baseCameraFragment.photoVideoLayout.photoVideoLayoutViewHolder.rlEdit.setOnClickListener { view: View ->
+//                val uri = Uri.parse(view.tag.toString()).toString()
+//                photoEditFile = createCacheFile(baseCameraFragment.myContext, TYPE_PICTURE)
+//                val intent = Intent()
+//                intent.setClass(baseCameraFragment.myContext, ImageEditActivity::class.java)
+//                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SCREEN_ORIENTATION, baseCameraFragment.mainActivity?.requestedOrientation)
+//                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_URI, uri)
+//                intent.putExtra(ImageEditActivity.EXTRA_IMAGE_SAVE_PATH, photoEditFile?.absolutePath)
+//                imageEditActivityResult?.launch(intent)
+//            }
+//        }
 
     }
 
