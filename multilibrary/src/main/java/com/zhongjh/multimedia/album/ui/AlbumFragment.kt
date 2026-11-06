@@ -195,6 +195,16 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
     private var mAlbum = Album()
 
     /**
+     * 默认专辑是否已经初始化，防止首次加载事件早于订阅丢失后一直显示空相册
+     */
+    private var mIsDefaultAlbumInitialized = false
+
+    /**
+     * 空相册时自动补请求权限，避免在一次性流程中反复弹窗
+     */
+    private var mIsAlbumPermissionRequested = false
+
+    /**
      * 是否刷新
      */
     private val mIsRefresh = false
@@ -428,12 +438,26 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
      * 初始化数据的监控
      */
     private fun initObserveData() {
-        // 专辑加载完毕,StateFlow只做纯UI绑定，不加载数据、不重置选中
+        // 专辑加载完毕后绑定列表并兜底初始化默认专辑，避免首次加载事件早于订阅导致空相册
         LifecycleFlowCollector.collectDistinct(this, mMainModel.albums) { albums ->
             LogUtil.d("AlbumFragmentFlow", "mMainModel.albums")
             if (albums.isNotEmpty()) {
                 // 更新专辑列表
                 mAlbumSpinner?.bindFolder(albums)
+                if (!mIsDefaultAlbumInitialized) {
+                    mIsDefaultAlbumInitialized = true
+                    mMainModel.currentSelection = 0
+                    onAlbumSelected(albums[0])
+                    updateAlbumTitle(albums)
+                } else {
+                    // 权限变化或媒体库变化后重新加载当前专辑
+                    mMainModel.reloadPageMediaData(mAlbum.id, mAlbumSpec.pageSize)
+                }
+            } else if (mIsDefaultAlbumInitialized && !mIsAlbumPermissionRequested &&
+                mAlbumModel.isLimitedAccessPermission() == PermissionState.LimitedAccess
+            ) {
+                mIsAlbumPermissionRequested = true
+                mTvAlbumPermissionManager.requestMoreMediaAccess()
             }
         }
         // 原图选项改变
@@ -448,19 +472,6 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
             // 滑动到viewPage的一样position
             isRecyclerViewUserDragging = false
             mBinding.recyclerview.smoothScrollToPosition(smoothScrollPosition)
-        }
-        // 一次性初始化逻辑：仅首次加载执行，重订阅绝不触发 ==========
-        LifecycleFlowCollector.collect(this, mMainModel.albumLoadFinishEvent) {
-            LogUtil.d("AlbumFragmentFlow", "mMainModel.albumLoadFinishEvent")
-            val albums = mMainModel.albums.value
-            if (albums.isNotEmpty()) {
-                // 默认选中第一个专辑
-                mMainModel.currentSelection = 0
-                // 加载默认专辑数据
-                onAlbumSelected(albums[0])
-                // 更新专辑标题（保留原动画逻辑）
-                updateAlbumTitle(albums)
-            }
         }
         // 一次性初始化逻辑：手动切换专辑重载媒体，跨相册保留选中 ==========
         LifecycleFlowCollector.collect(this, mMainModel.albumChangeEvent) { targetAlbum ->
@@ -520,6 +531,7 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // Android14+重新请求相册权限后，系统可选择更多媒体
         mAlbumPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
             mTvAlbumPermissionManager.onResume()
+            mMainModel.reloadPageMediaData(mAlbum.id, mAlbumSpec.pageSize)
         }
 
         // 系统拍照/录像共用回调

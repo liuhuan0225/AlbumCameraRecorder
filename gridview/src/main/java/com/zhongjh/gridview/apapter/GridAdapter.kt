@@ -135,7 +135,8 @@ class GridAdapter(private val mContext: Context, private val mGridLayoutManage: 
             if (gridMedia.isVideo() || gridMedia.isAudio()) {
                 // 视频处理，判断是否显示播放按钮
                 holder.tvVideoDuration.visibility = View.VISIBLE
-                holder.tvVideoDuration.text = DateUtils.formatElapsedTime(gridMedia.duration / TIME_UNIT)
+                holder.tvVideoDuration.text =
+                    DateUtils.formatElapsedTime((gridMedia.duration + 999) / TIME_UNIT)
             } else if (gridMedia.isImageOrGif()) {
                 holder.tvVideoDuration.visibility = View.GONE
             }

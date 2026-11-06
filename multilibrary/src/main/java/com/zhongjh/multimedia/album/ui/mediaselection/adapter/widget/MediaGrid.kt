@@ -209,7 +209,7 @@ class MediaGrid : SquareFrameLayout, View.OnClickListener {
             mVideoDuration.visibility = VISIBLE
             mImgVideo.visibility = VISIBLE
             mVideoDuration.text =
-                DateUtils.formatElapsedTime(mMedia.duration / 1000)
+                DateUtils.formatElapsedTime((mMedia.duration + 999) / 1000)
         } else {
             mVideoDuration.visibility = GONE
             mImgVideo.visibility = GONE

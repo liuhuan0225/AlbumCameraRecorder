@@ -147,7 +147,7 @@ class TvAlbumPermissionManager(
     /**
      * 重新请求媒体权限，让Android14+系统弹出选择更多媒体
      */
-    private fun requestMoreMediaAccess() {
+    fun requestMoreMediaAccess() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             launchAppSettings()
             return

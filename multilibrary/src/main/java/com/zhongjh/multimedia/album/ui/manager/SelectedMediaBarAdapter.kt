@@ -93,7 +93,8 @@ class SelectedMediaBarAdapter(
             binding.viewDeselectedMask.isVisible = media.fileId in deselectedMediaIds
             binding.ivRemoveSelectedMedia.isVisible = isRemoveButtonVisible(media)
             if (isVideo) {
-                binding.tvSelectedVideoDuration.text = DateUtils.formatElapsedTime(media.duration / 1000)
+                binding.tvSelectedVideoDuration.text =
+                    DateUtils.formatElapsedTime((media.duration + 999) / 1000)
             }
             binding.ivSelectedMedia.setOnClickListener {
                 val position = bindingAdapterPosition
