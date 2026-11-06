@@ -919,13 +919,23 @@ class AlbumFragment : Fragment(), AlbumAdapter.CheckStateListener, AlbumAdapter.
         // 将当前列表的组件宽高数据添加到缓存
         add(mBinding.recyclerview, 0)
 
-        currentPosition = adapterPosition
-        mMainModel.previewPosition = adapterPosition
+        // 以数据源索引为准计算预览位置，避免相册网格的拍照格与预览页的相机偏移不一致时索引错位
+        val dataPosition = item?.let { clicked ->
+            mMainModel.getLocalMedias().indexOfFirst { it.fileId == clicked.fileId }
+        } ?: -1
+        val previewPosition = if (dataPosition >= 0) {
+            if (isDisplayCamera()) dataPosition + 1 else dataPosition
+        } else {
+            adapterPosition
+        }
+
+        currentPosition = previewPosition
+        mMainModel.previewPosition = previewPosition
 
         startPreviewFragmentByAlbum(
             (requireActivity() as MainActivity),
             isDisplayCamera(),
-            position = adapterPosition
+            position = previewPosition
         )
     }
 
