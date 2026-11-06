@@ -112,6 +112,7 @@
     <string name="single_image_crop_1_1">Single image crop 1:1</string>
     <string name="single_image_crop_9_16">Single image crop 9:16</string>
     <string name="single_image_crop_round_mask">Single image crop round mask</string>
+    <string name="local_image_crop">Local image direct crop</string>
     <string name="compress_image">Compress image</string>
     <string name="test_result">Result</string>
     <string name="test_result_empty">Tap a test button to choose media.</string>

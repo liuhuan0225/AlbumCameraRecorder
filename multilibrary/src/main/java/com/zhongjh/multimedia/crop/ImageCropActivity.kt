@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnLayout
@@ -48,6 +49,7 @@ class ImageCropActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityImageCropBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupStatusBarInsets()
@@ -219,6 +221,8 @@ class ImageCropActivity : AppCompatActivity() {
         private const val JPEG_QUALITY = 95
         private val TAG = ImageCropActivity::class.java.simpleName
 
+        @JvmStatic
+        @JvmOverloads
         fun start(
             activity: Activity,
             sourceUri: String,
@@ -228,6 +232,7 @@ class ImageCropActivity : AppCompatActivity() {
             maskImage: Int = 0
         ): Intent {
             return Intent(activity, ImageCropActivity::class.java)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 .putExtra(EXTRA_IMAGE_URI, sourceUri)
                 .putExtra(EXTRA_IMAGE_SAVE_PATH, output)
                 .putExtra(EXTRA_SAVE_OUTPUT_PATH, output)

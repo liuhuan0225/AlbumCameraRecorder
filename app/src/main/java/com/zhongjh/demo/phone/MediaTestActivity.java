@@ -27,6 +27,7 @@ import com.zhongjh.demo.configuration.OnImageCompressionLuBan;
 import com.zhongjh.demo.databinding.ActivityMediaTestBinding;
 import com.zhongjh.common.utils.FileUtils;
 import com.zhongjh.common.utils.MediaUtils;
+import com.zhongjh.multimedia.crop.ImageCropActivity;
 import com.zhongjh.multimedia.settings.AlbumSetting;
 import com.zhongjh.multimedia.settings.GlobalSetting;
 import com.zhongjh.multimedia.settings.MultiMediaSetting;
@@ -69,6 +70,18 @@ public class MediaTestActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 handleAlbumResult(result.getResultCode(), result.getData());
             });
+    private final ActivityResultLauncher<Intent> directCropLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                handleDirectCropResult(result.getResultCode(), result.getData());
+            });
+    private final ActivityResultLauncher<Intent> localImagePicker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() != RESULT_OK || result.getData() == null) return;
+                Uri imageUri = result.getData().getData();
+                if (imageUri != null) {
+                    startDirectCrop(imageUri);
+                }
+            });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,6 +104,7 @@ public class MediaTestActivity extends AppCompatActivity {
         binding.btnCropImageRoundMask.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop round mask", 1f, 1f,
                         R.drawable.crop_round_mask));
+        binding.btnLocalImageCrop.setOnClickListener(v -> selectLocalImage());
         binding.btnCompressImage.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_COMPRESS, "Compress"));
     }
@@ -137,6 +151,50 @@ public class MediaTestActivity extends AppCompatActivity {
                 0
         );
         globalSetting.forResult(albumLauncher);
+    }
+
+    private void selectLocalImage() {
+        localImagePicker.launch(new Intent(Intent.ACTION_GET_CONTENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("image/*"));
+    }
+
+    private void startDirectCrop(Uri sourceUri) {
+        String sourceUriString = sourceUri.toString();
+        File output = new File(getCacheDir(), "media_test_crop_" + System.currentTimeMillis() + ".jpg");
+        directCropLauncher.launch(ImageCropActivity.start(this, sourceUriString, output.getAbsolutePath(), 1f, 1f));
+    }
+
+    private void handleDirectCropResult(int resultCode, @Nullable Intent intent) {
+        if (resultCode != RESULT_OK || intent == null) {
+            binding.tvResult.setText(R.string.crop_failed);
+            return;
+        }
+        String croppedPath = intent.getStringExtra(ImageCropActivity.EXTRA_SAVE_OUTPUT_PATH);
+        if (TextUtils.isEmpty(croppedPath)) {
+            binding.tvResult.setText(R.string.crop_failed);
+            return;
+        }
+        File croppedFile = new File(croppedPath);
+        if (!croppedFile.exists()) {
+            binding.tvResult.setText(R.string.crop_failed);
+            return;
+        }
+        actionTitle = "Direct crop";
+        showMediaPaths(actionTitle, createCropResult(croppedFile, intent));
+    }
+
+    private List<LocalMedia> createCropResult(File croppedFile, Intent intent) {
+        LocalMedia localMedia = new LocalMedia();
+        localMedia.setEditorPath(croppedFile.getAbsolutePath());
+        localMedia.setCompressPath(croppedFile.getAbsolutePath());
+        localMedia.setSize(croppedFile.length());
+        localMedia.setFileName(croppedFile.getName());
+        localMedia.setWidth(intent.getIntExtra(ImageCropActivity.EXTRA_WIDTH, 0));
+        localMedia.setHeight(intent.getIntExtra(ImageCropActivity.EXTRA_HEIGHT, 0));
+        ArrayList<LocalMedia> mediaList = new ArrayList<>();
+        mediaList.add(localMedia);
+        return mediaList;
     }
 
     private void handleAlbumResult(int resultCode, @Nullable Intent intent) {

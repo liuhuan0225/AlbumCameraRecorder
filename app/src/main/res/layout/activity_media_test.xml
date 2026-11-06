@@ -68,6 +68,13 @@
                 android:text="@string/single_image_crop_round_mask" />
 
             <Button
+                android:id="@+id/btnLocalImageCrop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/local_image_crop" />
+
+            <Button
                 android:id="@+id/btnCompressImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

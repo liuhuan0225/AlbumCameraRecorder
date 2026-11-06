@@ -43,7 +43,7 @@ object StatusBarUtils {
         window.statusBarColor = Color.TRANSPARENT
         constraintLayout.setPadding(
             constraintLayout.paddingLeft,  // 保留原有左 padding
-            getNavigationBarsHeight(activity),                          // 顶部 padding 设为
+            getStatusBarHeight(activity),                  // 顶部 padding 设为状态栏高度
             constraintLayout.paddingRight, // 保留原有右 padding
             constraintLayout.paddingBottom // 保留原有底 padding
         )

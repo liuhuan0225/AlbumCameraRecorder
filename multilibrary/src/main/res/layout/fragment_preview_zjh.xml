@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:background="#9919171C"
         android:layout_alignParentEnd="true"
-        android:fitsSystemWindows="true"
         tools:ignore="MissingConstraints">
 
         <ImageButton
