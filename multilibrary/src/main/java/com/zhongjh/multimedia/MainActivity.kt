@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -40,6 +41,7 @@ import com.zhongjh.multimedia.camera.entity.TabEntity
 import com.zhongjh.multimedia.camera.ui.camera.CameraFragment
 import com.zhongjh.multimedia.constants.ModuleTypes
 import com.zhongjh.multimedia.databinding.ActivityMainZjhBinding
+import com.zhongjh.multimedia.locale.AlbumLocale
 import com.zhongjh.multimedia.recorder.SoundRecordingFragment
 import com.zhongjh.multimedia.settings.GlobalSpec
 import com.zhongjh.multimedia.settings.GlobalSpec.getMimeTypeSet
@@ -61,6 +63,10 @@ import kotlin.math.abs
  * @date 2018/8/22
  */
 open class MainActivity : AppCompatActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AlbumLocale.wrap(newBase))
+    }
 
     val mActivityMainZjhBinding by lazy {
         ActivityMainZjhBinding.inflate(layoutInflater)

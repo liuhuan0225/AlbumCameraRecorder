@@ -65,6 +65,7 @@
         android:includeFontPadding="false"
         android:lineSpacingExtra="4sp"
         android:text="@string/z_multi_library_confirm"
+        android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="@dimen/crop_button_text_size"
         app:layout_constraintBottom_toBottomOf="parent"

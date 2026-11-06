@@ -23,6 +23,7 @@ import com.zhongjh.common.utils.LogUtil
 import com.zhongjh.common.utils.StatusBarUtils.initStatusBar
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.databinding.ActivityPreviewVideoZjhBinding
+import com.zhongjh.multimedia.locale.AlbumLocale
 import com.zhongjh.multimedia.settings.GlobalSpec
 import com.zhongjh.multimedia.settings.GlobalSpec.orientation
 import com.zhongjh.multimedia.utils.FileMediaUtil
@@ -41,6 +42,10 @@ import kotlin.coroutines.resume
  * @author zhongjh
  */
 class PreviewVideoActivity : AppCompatActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AlbumLocale.wrap(newBase))
+    }
 
     private val mActivityPreviewVideoZjhBinding by lazy {
         ActivityPreviewVideoZjhBinding.inflate(layoutInflater)

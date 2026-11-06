@@ -28,7 +28,7 @@
 
     <!-- region 相册 -->
 
-    <string name="z_multi_library_album_name_all">all</string>
+    <string name="z_multi_library_album_name_all">All</string>
 
     <string name="z_multi_library_button_preview">Preview</string>
     <string name="z_multi_library_button_edit">Edit</string>

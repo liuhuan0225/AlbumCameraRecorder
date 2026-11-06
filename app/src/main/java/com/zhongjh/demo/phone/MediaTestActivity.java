@@ -1,5 +1,7 @@
 package com.zhongjh.demo.phone;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +30,7 @@ import com.zhongjh.demo.databinding.ActivityMediaTestBinding;
 import com.zhongjh.common.utils.FileUtils;
 import com.zhongjh.common.utils.MediaUtils;
 import com.zhongjh.multimedia.crop.ImageCropActivity;
+import com.zhongjh.multimedia.locale.AlbumLocale;
 import com.zhongjh.multimedia.settings.AlbumSetting;
 import com.zhongjh.multimedia.settings.GlobalSetting;
 import com.zhongjh.multimedia.settings.MultiMediaSetting;
@@ -38,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -88,6 +92,7 @@ public class MediaTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMediaTestBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        AlbumLocale.setContextWrapper(this::wrapAlbumContext);
 
         binding.btnSingleImage.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_SELECT, "Single image"));
@@ -100,7 +105,7 @@ public class MediaTestActivity extends AppCompatActivity {
         binding.btnCropImage1x1.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 1:1", 1f, 1f));
         binding.btnCropImage9x16.setOnClickListener(v ->
-                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 9:16", 2f, 16f));
+                openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop 9:16", 2f, 3f));
         binding.btnCropImageRoundMask.setOnClickListener(v ->
                 openAlbum(MimeType.ofImage(), 1, ACTION_CROP, "Crop round mask", 1f, 1f,
                         R.drawable.crop_round_mask));
@@ -112,11 +117,18 @@ public class MediaTestActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        AlbumLocale.setContextWrapper(null);
         executor.shutdown();
     }
 
     private void openAlbum(Set<MimeType> mimeTypes, int maxCount, int action, String title) {
         openAlbum(mimeTypes, maxCount, action, title, 0f, 0f);
+    }
+
+    private Context wrapAlbumContext(Context base) {
+        Configuration configuration = new Configuration(base.getResources().getConfiguration());
+        configuration.setLocale(Locale.forLanguageTag("ar"));
+        return base.createConfigurationContext(configuration);
     }
 
     private void openAlbum(Set<MimeType> mimeTypes, int maxCount, int action, String title,

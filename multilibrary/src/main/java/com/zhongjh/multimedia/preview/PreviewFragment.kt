@@ -485,9 +485,14 @@ class PreviewFragment : BaseFragment() {
                 state: RecyclerView.State
             ) {
                 if (parent.getChildAdapterPosition(view) > 0) {
-                    outRect.left = requireContext().resources.getDimensionPixelSize(
+                    val spacing = requireContext().resources.getDimensionPixelSize(
                         R.dimen.z_selected_media_bar_spacing
                     )
+                    if (parent.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+                        outRect.right = spacing
+                    } else {
+                        outRect.left = spacing
+                    }
                 }
             }
         })

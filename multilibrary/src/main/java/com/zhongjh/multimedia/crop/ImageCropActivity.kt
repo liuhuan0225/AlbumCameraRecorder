@@ -1,6 +1,7 @@
 package com.zhongjh.multimedia.crop
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,6 +19,7 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
 import com.zhongjh.multimedia.R
 import com.zhongjh.multimedia.databinding.ActivityImageCropBinding
+import com.zhongjh.multimedia.locale.AlbumLocale
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.ceil
@@ -31,6 +33,10 @@ import kotlinx.coroutines.withContext
  * 固定比例图片裁剪页，只提供居中比例裁剪
  */
 class ImageCropActivity : AppCompatActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AlbumLocale.wrap(newBase))
+    }
 
     private lateinit var binding: ActivityImageCropBinding
     private var imageUri: Uri? = null

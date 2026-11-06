@@ -1,11 +1,13 @@
 package com.zhongjh.multimedia.preview
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.zhongjh.multimedia.R
+import com.zhongjh.multimedia.locale.AlbumLocale
 import com.zhongjh.multimedia.settings.GlobalSpec
 
 /**
@@ -15,6 +17,10 @@ import com.zhongjh.multimedia.settings.GlobalSpec
  * @date 2022/8/29
  */
 class PreviewActivity : AppCompatActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AlbumLocale.wrap(newBase))
+    }
+
     private var mGlobalSpec = GlobalSpec
     private lateinit var backPressedCallback: OnBackPressedCallback
 
